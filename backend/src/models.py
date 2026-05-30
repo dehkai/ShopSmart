@@ -1,0 +1,30 @@
+from pydantic import BaseModel, Field
+
+
+class ItemMatch(BaseModel):
+    query: str
+    item_code: int | None = None
+    item_name: str | None = None
+    confidence: float = Field(default=0.0, ge=0.0, le=1.0)
+    resolved: bool = False
+
+
+class PremisePrice(BaseModel):
+    premise_code: int
+    premise: str
+    state: str
+    price: float
+
+
+class BasketItemResult(BaseModel):
+    item_code: int
+    item_name: str
+    cheapest: PremisePrice | None = None
+
+
+class BasketResult(BaseModel):
+    matches: list[ItemMatch]
+    items: list[BasketItemResult]
+    total: float = 0.0
+    savings: float = 0.0
+    unresolved: list[str] = Field(default_factory=list)
