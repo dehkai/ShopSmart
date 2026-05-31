@@ -68,6 +68,7 @@ export function StateChart({ items, total = 36.90 }: StateChartProps) {
                 />
               </div>
 
+              <div
                 className={`w-20 text-xs font-bold font-mono text-right ${
                   isCheapest ? 'text-[#22c55e]' : 'text-[#bccbb9]'
                 }`}

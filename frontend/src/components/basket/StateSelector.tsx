@@ -35,6 +35,7 @@ export function StateSelector({ value, onChange }: StateSelectorProps) {
           ))}
         </select>
 
+        <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none select-none">
           <svg
             className="w-4 h-4 text-[#8e9099] opacity-70"
             fill="none"

@@ -39,9 +39,11 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col relative bg-[#0e1322] text-[#dee1f7] overflow-x-hidden selection:bg-[#22c55e]/30">
       
+      <div className="fixed inset-0 grain-overlay z-0 pointer-events-none" />
       <div className="fixed -bottom-48 -left-48 w-[600px] h-[600px] bg-[#22c55e]/10 rounded-full blur-[120px] z-0 pointer-events-none" />
 
       <header className="absolute top-6 left-6 md:left-16 z-50 select-none">
+        <div 
           onClick={() => result && reset()}
           className="font-sans text-2xl font-extrabold text-[#22c55e] tracking-tighter cursor-pointer"
         >
@@ -49,6 +51,7 @@ export default function Home() {
         </div>
       </header>
 
+      <div className="relative z-10 flex flex-col flex-1">
         
         <AnimatePresence mode="wait">
           {!result ? (
@@ -62,6 +65,7 @@ export default function Home() {
             >
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center w-full">
                 
+                <div className="lg:col-span-7 space-y-6">
                   <header className="space-y-3">
                     <h1 
                       className="font-extrabold tracking-tight text-[#dee1f7]"
@@ -80,6 +84,7 @@ export default function Home() {
                     </p>
                   </header>
 
+                  <div className="glass-card rounded-[2rem] p-6 md:p-8 space-y-6 shadow-2xl shadow-black/20">
                     <StateSelector
                       value={selectedState}
                       onChange={setSelectedState}
@@ -93,6 +98,7 @@ export default function Home() {
                   </div>
                 </div>
 
+                <div 
                   className="lg:col-span-5 relative hidden lg:flex flex-col items-center"
                   onMouseMove={handleMouseMove}
                   onMouseLeave={handleMouseLeave}
@@ -196,7 +202,9 @@ export default function Home() {
               transition={{ duration: 0.3 }}
               className="w-full flex-1 flex flex-col"
             >
+              <div className="pt-20 pb-16 px-6 md:px-16 w-full max-w-7xl mx-auto">
                 
+                <AnimatePresence>
                   {error && (
                     <motion.div
                       key="error-banner"

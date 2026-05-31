@@ -22,9 +22,17 @@ class BasketItemResult(BaseModel):
     cheapest: PremisePrice | None = None
 
 
+class StateRanking(BaseModel):
+    state: str
+    total: float
+    items_found: int
+
+
 class BasketResult(BaseModel):
     matches: list[ItemMatch]
     items: list[BasketItemResult]
+    state_ranking: list[StateRanking] = Field(default_factory=list)
     total: float = 0.0
     savings: float = 0.0
     unresolved: list[str] = Field(default_factory=list)
+    error: str | None = None
