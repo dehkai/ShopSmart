@@ -1,0 +1,462 @@
+# Instincts generated from https://github.com/dehkai/ShopSmart
+# Generated: 2026-05-31T05:22:23.250Z
+# Version: 2.0
+# NOTE: This file supplements (does not replace) any existing curated instincts.
+# High-confidence manually curated instincts should be preserved alongside these.
+
+---
+id: ShopSmart-commit-conventional
+trigger: "when writing a commit message"
+confidence: 0.85
+domain: git
+source: repo-analysis
+source_repo: https://github.com/dehkai/ShopSmart
+---
+
+# ShopSmart Commit Conventional
+
+## Action
+
+Use conventional commit format with prefixes: feat
+
+## Evidence
+
+- 2 commits analyzed
+- Detected conventional commit pattern
+- Examples: feat: frontend page setup, feat: revamp landing and basket page
+
+---
+id: ShopSmart-commit-length
+trigger: "when writing a commit message"
+confidence: 0.6
+domain: git
+source: repo-analysis
+source_repo: https://github.com/dehkai/ShopSmart
+---
+
+# ShopSmart Commit Length
+
+## Action
+
+Keep commit messages concise (~31 characters)
+
+## Evidence
+
+- Average commit message length: 31 chars
+- Based on 2 commits
+
+---
+id: ShopSmart-naming-files
+trigger: "when creating a new file"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/dehkai/ShopSmart
+---
+
+# ShopSmart Naming Files
+
+## Action
+
+Use PascalCase naming convention
+
+## Evidence
+
+- Analyzed file naming patterns in repository
+- Dominant pattern: PascalCase
+
+---
+id: ShopSmart-import-alias
+trigger: "when importing modules"
+confidence: 0.85
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/dehkai/ShopSmart
+---
+
+# ShopSmart Import Alias
+
+## Action
+
+Use path aliases (@/, ~/) instead of relative imports
+
+## Evidence
+
+- Import analysis shows alias pattern
+- Example: import { x } from '@/lib/x'
+
+---
+id: ShopSmart-export-style
+trigger: "when exporting from a module"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/dehkai/ShopSmart
+---
+
+# ShopSmart Export Style
+
+## Action
+
+Prefer named exports
+
+## Evidence
+
+- Export pattern analysis
+- Dominant style: named
+
+---
+id: ShopSmart-arch-type-based
+trigger: "when adding new code"
+confidence: 0.8
+domain: architecture
+source: repo-analysis
+source_repo: https://github.com/dehkai/ShopSmart
+---
+
+# ShopSmart Arch Type Based
+
+## Action
+
+Place code in the appropriate type folder (components/, services/, utils/, etc.)
+
+## Evidence
+
+- Type-based module organization detected
+- Folders: 
+
+---
+id: ShopSmart-test-separate
+trigger: "when writing tests"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/dehkai/ShopSmart
+---
+
+# ShopSmart Test Separate
+
+## Action
+
+Place tests in the tests/ or __tests__/ directory, mirroring src structure
+
+## Evidence
+
+- Separate test directory pattern detected
+- Tests live in dedicated test folders
+
+---
+id: ShopSmart-workflow-frontend-feature-or-page-revamp
+trigger: "when doing frontend feature or page revamp"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/dehkai/ShopSmart
+---
+
+# ShopSmart Workflow Frontend Feature Or Page Revamp
+
+## Action
+
+Follow the frontend-feature-or-page-revamp workflow:
+1. Update or create relevant page files in src/app (e.g., page.tsx).
+2. Modify or add UI components in src/components (e.g., basket, results, ui subfolders).
+3. Update related hooks in src/hooks (e.g., useBasket.ts).
+4. Adjust global styles in src/app/globals.css as needed.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: frontend/src/app/page.tsx, frontend/src/app/globals.css, frontend/src/components/basket/BasketInput.tsx
+
+---
+id: shopsmart-instinct-file-naming
+trigger: "When creating a new file in the codebase"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: dehkai/ShopSmart
+---
+
+# Shopsmart Instinct File Naming
+
+## Action
+
+Name the file using PascalCase (e.g., BasketInput.tsx)
+
+## Evidence
+
+- Pattern in files: frontend/src/components/basket/BasketInput.tsx, frontend/src/components/results/ItemPriceList.tsx
+
+---
+id: shopsmart-instinct-function-naming
+trigger: "When defining a new function"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: dehkai/ShopSmart
+---
+
+# Shopsmart Instinct Function Naming
+
+## Action
+
+Use camelCase for function names (e.g., useBasket)
+
+## Evidence
+
+- Pattern in files: frontend/src/hooks/useBasket.ts
+
+---
+id: shopsmart-instinct-class-naming
+trigger: "When defining a new class"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: dehkai/ShopSmart
+---
+
+# Shopsmart Instinct Class Naming
+
+## Action
+
+Use PascalCase for class names
+
+## Evidence
+
+- Pattern in codebase naming conventions
+
+---
+id: shopsmart-instinct-constant-naming
+trigger: "When declaring a constant"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: dehkai/ShopSmart
+---
+
+# Shopsmart Instinct Constant Naming
+
+## Action
+
+Use SCREAMING_SNAKE_CASE for constant names
+
+## Evidence
+
+- Pattern in codebase naming conventions
+
+---
+id: shopsmart-instinct-import-alias
+trigger: "When importing modules"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: dehkai/ShopSmart
+---
+
+# Shopsmart Instinct Import Alias
+
+## Action
+
+Use alias import style
+
+## Evidence
+
+- Pattern in codebase import statements
+
+---
+id: shopsmart-instinct-named-exports
+trigger: "When exporting functions or components"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: dehkai/ShopSmart
+---
+
+# Shopsmart Instinct Named Exports
+
+## Action
+
+Use named exports
+
+## Evidence
+
+- Pattern in codebase export statements
+
+---
+id: shopsmart-instinct-try-catch-errors
+trigger: "When handling errors in TypeScript code"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: dehkai/ShopSmart
+---
+
+# Shopsmart Instinct Try Catch Errors
+
+## Action
+
+Use try-catch blocks for error handling
+
+## Evidence
+
+- Pattern in codebase error handling style
+
+---
+id: shopsmart-instinct-git-conventional-commits
+trigger: "When writing a git commit message"
+confidence: 0.9
+domain: git
+source: repo-analysis
+source_repo: dehkai/ShopSmart
+---
+
+# Shopsmart Instinct Git Conventional Commits
+
+## Action
+
+Use the conventional commit format with 'feat' prefix for features (e.g., 'feat: revamp landing and basket page')
+
+## Evidence
+
+- Seen in commit: feat: frontend page setup
+- Seen in commit: feat: revamp landing and basket page
+
+---
+id: shopsmart-instinct-git-commit-length
+trigger: "When writing a git commit message"
+confidence: 0.7
+domain: git
+source: repo-analysis
+source_repo: dehkai/ShopSmart
+---
+
+# Shopsmart Instinct Git Commit Length
+
+## Action
+
+Keep commit messages concise, around 31 characters on average
+
+## Evidence
+
+- Pattern in commit message length
+
+---
+id: shopsmart-instinct-frontend-revamp-workflow-page
+trigger: "When adding or revamping a frontend page"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: dehkai/ShopSmart
+---
+
+# Shopsmart Instinct Frontend Revamp Workflow Page
+
+## Action
+
+Update or create relevant page files in frontend/src/app (e.g., page.tsx)
+
+## Evidence
+
+- Workflow: frontend-feature-or-page-revamp
+- Files: frontend/src/app/page.tsx
+
+---
+id: shopsmart-instinct-frontend-revamp-workflow-components
+trigger: "When adding or revamping a frontend page"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: dehkai/ShopSmart
+---
+
+# Shopsmart Instinct Frontend Revamp Workflow Components
+
+## Action
+
+Modify or add UI components in frontend/src/components (e.g., basket, results, ui subfolders)
+
+## Evidence
+
+- Workflow: frontend-feature-or-page-revamp
+- Files: frontend/src/components/basket/BasketInput.tsx, frontend/src/components/results/ItemPriceList.tsx
+
+---
+id: shopsmart-instinct-frontend-revamp-workflow-hooks
+trigger: "When adding or revamping a frontend page"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: dehkai/ShopSmart
+---
+
+# Shopsmart Instinct Frontend Revamp Workflow Hooks
+
+## Action
+
+Update related hooks in frontend/src/hooks (e.g., useBasket.ts)
+
+## Evidence
+
+- Workflow: frontend-feature-or-page-revamp
+- Files: frontend/src/hooks/useBasket.ts
+
+---
+id: shopsmart-instinct-frontend-revamp-workflow-styles
+trigger: "When adding or revamping a frontend page"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: dehkai/ShopSmart
+---
+
+# Shopsmart Instinct Frontend Revamp Workflow Styles
+
+## Action
+
+Adjust global styles in frontend/src/app/globals.css as needed
+
+## Evidence
+
+- Workflow: frontend-feature-or-page-revamp
+- Files: frontend/src/app/globals.css
+
+---
+id: shopsmart-instinct-testing-location
+trigger: "When adding new tests"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: dehkai/ShopSmart
+---
+
+# Shopsmart Instinct Testing Location
+
+## Action
+
+Place test files in a separate location from source files
+
+## Evidence
+
+- Architecture pattern: testLocation is 'separate'
+
+---
+id: shopsmart-instinct-testing-pattern-missing
+trigger: "When writing tests"
+confidence: 0.4
+domain: testing
+source: repo-analysis
+source_repo: dehkai/ShopSmart
+---
+
+# Shopsmart Instinct Testing Pattern Missing
+
+## Action
+
+No specific test file or pattern detected; follow general TypeScript testing best practices
+
+## Evidence
+
+- No explicit test files or patterns found in provided data
+
