@@ -1,98 +1,102 @@
+'use client'
+
+import { Edit, CheckCircle, AlertTriangle } from 'lucide-react'
 import type { ItemMatch } from '@/lib/types'
-import { Badge } from '@/components/ui/Badge'
-import { GlassCard } from '@/components/ui/GlassCard'
+import { CONFIDENCE_THRESHOLD_HIGH, CONFIDENCE_THRESHOLD_MID } from '@/lib/constants'
 
 interface MatchesTableProps {
   matches: ItemMatch[]
   unresolved: string[]
 }
 
+function getConfidenceBadge(confidence: number) {
+  if (confidence >= CONFIDENCE_THRESHOLD_HIGH) {
+    return (
+      <span className="px-3 py-1 bg-[#22c55e]/15 border border-[#22c55e]/30 text-[#22c55e] text-[10px] font-bold rounded-full uppercase tracking-wider">
+        High
+      </span>
+    )
+  }
+  if (confidence >= CONFIDENCE_THRESHOLD_MID) {
+    return (
+      <span className="px-3 py-1 bg-yellow-500/15 border border-yellow-500/30 text-yellow-500 text-[10px] font-bold rounded-full uppercase tracking-wider">
+        Mid
+      </span>
+    )
+  }
+  return (
+    <span className="px-3 py-1 bg-red-500/15 border border-red-500/30 text-red-500 text-[10px] font-bold rounded-full uppercase tracking-wider">
+      Low
+    </span>
+  )
+}
+
 export function MatchesTable({ matches, unresolved }: MatchesTableProps) {
   return (
-    <GlassCard padding="sm" className="overflow-hidden">
-      <p
-        className="text-xs font-semibold uppercase tracking-widest px-3 pt-3 pb-2"
-        style={{ color: '#c4c6d0', letterSpacing: '0.1em' }}
-      >
-        Item matching
-      </p>
-
-      <div className="overflow-x-auto max-h-72 overflow-y-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-              {['Your input', 'Matched item', 'Confidence', 'Status'].map((h) => (
-                <th
-                  key={h}
-                  className="text-left px-3 py-2 text-xs font-semibold uppercase"
-                  style={{ color: '#8e9099', letterSpacing: '0.05em' }}
-                >
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {matches.map((match, i) => (
-              <tr
-                key={i}
-                style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}
-                className="transition-colors hover:bg-white/[0.03]"
-              >
-                <td
-                  className="px-3 py-2.5 mono max-w-[160px] truncate"
-                  title={match.query}
-                  style={{ color: '#c4c6d0' }}
-                >
-                  {match.query}
-                </td>
-                <td
-                  className="px-3 py-2.5 max-w-[200px] truncate"
-                  title={match.item_name ?? '—'}
-                  style={{ color: '#e2e2e6' }}
-                >
-                  {match.item_name ?? <span style={{ color: '#8e9099' }}>—</span>}
-                </td>
-                <td className="px-3 py-2.5">
-                  {match.resolved ? (
-                    <Badge variant="confidence" value={match.confidence} />
-                  ) : (
-                    <span style={{ color: '#8e9099' }}>—</span>
-                  )}
-                </td>
-                <td className="px-3 py-2.5">
-                  <Badge variant={match.resolved ? 'resolved' : 'unresolved'} />
-                </td>
-              </tr>
-            ))}
-
-            {unresolved.map((q, i) => (
-              <tr
-                key={`unresolved-${i}`}
-                style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}
-                className="transition-colors hover:bg-white/[0.03]"
-              >
-                <td
-                  className="px-3 py-2.5 mono max-w-[160px] truncate"
-                  title={q}
-                  style={{ color: '#c4c6d0' }}
-                >
-                  {q}
-                </td>
-                <td className="px-3 py-2.5" style={{ color: '#8e9099' }}>
-                  —
-                </td>
-                <td className="px-3 py-2.5" style={{ color: '#8e9099' }}>
-                  —
-                </td>
-                <td className="px-3 py-2.5">
-                  <Badge variant="unresolved" />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <div className="glass-card p-6 rounded-xl flex flex-col">
+      <div className="mb-6">
+        <h3 className="text-sm font-semibold uppercase tracking-widest text-[#bccbb9] mb-1">
+          Intelligence Match
+        </h3>
+        <p className="text-xs text-[#bccbb9]/60">
+          Matching your list to PriceCatcher database items
+        </p>
       </div>
-    </GlassCard>
+
+      <div className="flex flex-col gap-4 max-h-[360px] overflow-y-auto pr-1 no-scrollbar">
+        {/* Matched / Resolved Items */}
+        {matches.map((match, idx) => (
+          <div
+            key={`match-${idx}`}
+            className="flex justify-between items-center p-3 border-b border-white/5 last:border-0"
+          >
+            <div className="min-w-0 flex-1 pr-4">
+              <div className="text-xs font-bold text-[#dee1f7] truncate" title={match.query}>
+                {match.query}
+              </div>
+              <div className="text-[11px] text-[#bccbb9]/60 truncate mt-0.5" title={match.item_name ?? ''}>
+                Matched: {match.item_name ?? 'Searching...'}
+              </div>
+            </div>
+            
+            <div className="shrink-0 flex items-center gap-2">
+              {match.resolved ? (
+                getConfidenceBadge(match.confidence)
+              ) : (
+                <span className="px-3 py-1 bg-white/5 border border-white/10 text-[#bccbb9]/50 text-[10px] font-bold rounded-full uppercase tracking-wider">
+                  Pending
+                </span>
+              )}
+            </div>
+          </div>
+        ))}
+
+        {/* Unresolved / Not Found Items */}
+        {unresolved.map((q, idx) => (
+          <div
+            key={`unresolved-${idx}`}
+            className="flex justify-between items-center p-3 border-2 border-dashed border-white/10 rounded-xl bg-white/[0.02]"
+          >
+            <div className="min-w-0 flex-1 pr-4">
+              <div className="text-xs font-bold text-[#dee1f7]/70 italic truncate">
+                {q}
+              </div>
+              <div className="text-[11px] text-[#ffb5ab] flex items-center gap-1 mt-0.5">
+                <AlertTriangle size={10} />
+                <span>No price data found</span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="shrink-0 px-3 py-1 text-[#bccbb9] hover:text-[#22c55e] transition-colors flex items-center gap-1 font-bold text-[10px] tracking-wider uppercase"
+            >
+              <Edit size={10} />
+              <span>Edit</span>
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }

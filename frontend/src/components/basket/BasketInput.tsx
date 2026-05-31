@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 
@@ -10,12 +11,10 @@ interface BasketInputProps {
   loading: boolean
 }
 
-const PLACEHOLDER = `telur gred A 10s
-beras 5kg
-minyak masak 1kg
-susu segar 1L
-roti gardenia
-ayam beku 1kg`
+const PLACEHOLDER = `2kg Red Onions
+1 pack Gardenia White Bread
+3kg Thai Jasmine Rice
+500g Chicken Breast`
 
 export function BasketInput({
   value,
@@ -23,6 +22,16 @@ export function BasketInput({
   onSubmit,
   loading,
 }: BasketInputProps) {
+  const [shortcutText, setShortcutText] = useState('Ctrl + Enter')
+
+  useEffect(() => {
+    const isMac = typeof window !== 'undefined' && 
+      /Mac|iPod|iPhone|iPad/i.test(navigator.platform || navigator.userAgent || '')
+    if (isMac) {
+      setShortcutText('⌘ Enter')
+    }
+  }, [])
+
   const lineCount = value
     .split('\n')
     .filter((l) => l.trim().length > 0).length
@@ -35,16 +44,16 @@ export function BasketInput({
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <label
           htmlFor="basket-input"
-          className="text-sm font-semibold"
-          style={{ color: '#c4c6d0' }}
+          className="text-[12px] font-semibold uppercase tracking-wider"
+          style={{ color: '#8e9099', letterSpacing: '0.1em' }}
         >
-          Grocery list
+          Your shopping list
         </label>
-        <span className="text-xs mono" style={{ color: '#8e9099' }}>
+        <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#22c55e', letterSpacing: '0.05em' }}>
           {lineCount > 0 ? `${lineCount} item${lineCount !== 1 ? 's' : ''}` : 'one item per line'}
         </span>
       </div>
@@ -56,11 +65,8 @@ export function BasketInput({
         onKeyDown={handleKeyDown}
         placeholder={PLACEHOLDER}
         disabled={loading}
-        rows={9}
-        className="glass textarea-glow w-full resize-none rounded-lg p-4 text-sm leading-relaxed mono
-          placeholder:text-[#44474e]
-          disabled:opacity-60 transition-all duration-200"
-        style={{ color: '#e2e2e6' }}
+        rows={8}
+        className="w-full h-48 bg-[#090e1c]/50 border border-white/10 rounded-xl p-5 font-mono text-[#22c55e] focus:ring-1 focus:ring-[#22c55e] focus:border-[#22c55e] outline-none transition-all placeholder:text-[#8e9099]/30 resize-none text-sm leading-relaxed"
         spellCheck={false}
         aria-label="Enter grocery items, one per line"
       />
@@ -70,10 +76,10 @@ export function BasketInput({
         size="lg"
         loading={loading}
         onClick={onSubmit}
-        className="w-full"
+        className="shimmer w-full bg-gradient-to-r from-[#22c55e] to-[#22c55e]/80 text-[#0e1322] font-bold text-sm py-4 rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-all active:scale-[0.98]"
         aria-busy={loading}
       >
-        {loading ? 'Matching items…' : (
+        {loading ? 'Optimizing Basket…' : (
           <>
             Optimize Basket
             <ArrowRight size={16} strokeWidth={2.5} />
@@ -82,8 +88,9 @@ export function BasketInput({
       </Button>
 
       <p className="text-xs text-center" style={{ color: '#8e9099' }}>
-        ⌘ Enter to submit · Malay or English accepted
+        {shortcutText} to submit · Malay or English accepted
       </p>
     </div>
   )
 }
+

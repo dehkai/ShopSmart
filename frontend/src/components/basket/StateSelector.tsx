@@ -12,34 +12,46 @@ export function StateSelector({ value, onChange }: StateSelectorProps) {
     <div className="flex flex-col gap-2">
       <label
         htmlFor="state-selector"
-        className="text-sm font-semibold"
-        style={{ color: '#c4c6d0' }}
+        className="text-[10px] font-bold uppercase tracking-wider text-[#bccbb9]/60"
+        style={{ letterSpacing: '0.1em' }}
       >
-        Filter by state
-        <span className="ml-1 font-normal" style={{ color: '#8e9099' }}>
-          (optional)
-        </span>
+        Select Region
       </label>
 
-      <select
-        id="state-selector"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="glass rounded-lg px-4 py-2.5 text-sm appearance-none cursor-pointer
-          focus:outline-none focus:border-[#22c55e]/40 focus:ring-1 focus:ring-[#22c55e]/20
-          transition-all duration-200"
-        style={{ color: '#e2e2e6' }}
-        aria-label="Filter results by Malaysian state"
-      >
-        <option value="" style={{ background: '#1c2132' }}>
-          All states
-        </option>
-        {MALAYSIAN_STATES.map((state) => (
-          <option key={state} value={state} style={{ background: '#1c2132' }}>
-            {state}
+      <div className="relative w-full">
+        <select
+          id="state-selector"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/15 focus:border-[#22c55e]/45 focus:bg-[#090e1c] text-[#dee1f7] text-xs font-semibold rounded-xl px-4 py-3 outline-none cursor-pointer appearance-none transition-all duration-300 shadow-md"
+        >
+          <option value="" className="bg-[#0e1322] text-[#dee1f7] font-semibold">
+            All States (National Average)
           </option>
-        ))}
-      </select>
+          {MALAYSIAN_STATES.map((state) => (
+            <option key={state} value={state} className="bg-[#0e1322] text-[#dee1f7]">
+              {state}
+            </option>
+          ))}
+        </select>
+
+          <svg
+            className="w-4 h-4 text-[#8e9099] opacity-70"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </div>
+      </div>
     </div>
   )
 }
+

@@ -1,27 +1,14 @@
 'use client'
 
-import { useState } from 'react'
 import type { BasketItemResult } from '@/lib/types'
-import { GlassCard } from '@/components/ui/GlassCard'
 
 interface ItemPriceListProps {
   items: BasketItemResult[]
 }
 
-function computeVariancePct(price: number, avg: number): number {
-  if (avg === 0) return 0
-  return ((price - avg) / avg) * 100
-}
-
 export function ItemPriceList({ items }: ItemPriceListProps) {
-  const [expandedIdx, setExpandedIdx] = useState<number | null>(null)
-
-  function toggle(i: number) {
-    setExpandedIdx(expandedIdx === i ? null : i)
-  }
-
-  // Average price across items that have cheapest data
   const pricesWithData = items.filter((i) => i.cheapest !== null)
+  
   const avgPrice =
     pricesWithData.length > 0
       ? pricesWithData.reduce((sum, i) => sum + i.cheapest!.price, 0) /
@@ -29,142 +16,98 @@ export function ItemPriceList({ items }: ItemPriceListProps) {
       : 0
 
   return (
-    <GlassCard padding="sm" className="overflow-hidden">
-      <p
-        className="text-xs font-semibold uppercase tracking-widest px-3 pt-3 pb-2"
-        style={{ color: '#c4c6d0', letterSpacing: '0.1em' }}
-      >
-        Per-item cheapest price
-      </p>
+    <div className="glass-card rounded-xl overflow-hidden shadow-2xl">
+      
+      {/* Table Header Section */}
+      <div className="p-8 border-b border-white/10 bg-[#090e1c]/50">
+        <h3 className="text-sm font-semibold uppercase tracking-widest text-[#bccbb9] mb-1">
+          Detailed Price Breakdown
+        </h3>
+        <p className="text-xs text-[#bccbb9]/60">
+          Item-by-item comparison across regional stores
+        </p>
+      </div>
 
-      <ul>
-        {items.map((item, i) => {
-          const isOpen = expandedIdx === i
-          const hasCheapest = item.cheapest !== null
-          const variancePct = hasCheapest
-            ? computeVariancePct(item.cheapest!.price, avgPrice)
-            : null
+      <div className="overflow-x-auto w-full">
+        <table className="w-full text-left border-collapse min-w-[700px]">
+          <thead>
+            <tr className="bg-white/[0.02] text-[10px] font-bold uppercase tracking-wider text-[#bccbb9] border-b border-white/10">
+              <th className="px-8 py-4">Item Name</th>
+              <th className="px-8 py-4">Cheapest Store</th>
+              <th className="px-8 py-4">State</th>
+              <th className="px-8 py-4">Best Price</th>
+              <th className="px-8 py-4 text-right">vs Average</th>
+            </tr>
+          </thead>
+          
+          <tbody className="text-xs">
+            {items.map((item, idx) => {
+              const cheapest = item.cheapest
+              const hasCheapest = cheapest !== null
+              
+              // Calculate variance from overall average
+              let variance = 0
+              if (hasCheapest && avgPrice > 0) {
+                variance = cheapest.price - avgPrice
+              }
 
-          return (
-            <li
-              key={item.item_code}
-              style={{
-                borderTop:
-                  i > 0 ? '1px solid rgba(255,255,255,0.05)' : undefined,
-              }}
-            >
-              <button
-                onClick={() => toggle(i)}
-                className="w-full text-left px-3 py-3 flex items-center justify-between gap-3
-                  transition-colors hover:bg-white/[0.03] focus-visible:outline-none
-                  focus-visible:bg-white/[0.05]"
-                aria-expanded={isOpen}
-              >
-                <span
-                  className="flex-1 min-w-0 text-sm truncate font-medium"
-                  title={item.item_name}
-                  style={{ color: '#e2e2e6' }}
+              return (
+                <tr
+                  key={item.item_code ?? `item-${idx}`}
+                  className={`border-b border-white/5 hover:bg-white/[0.03] transition-colors
+                    ${
+                      hasCheapest && idx === 0
+                        ? 'bg-[#22c55e]/5 border-l-4 border-l-[#22c55e]'
+                        : 'border-l-4 border-l-transparent'
+                    }`}
                 >
-                  {item.item_name}
-                </span>
-
-                <span className="flex items-center gap-3 shrink-0">
-                  {hasCheapest ? (
-                    <>
-                      <span
-                        className="mono text-sm font-semibold"
-                        style={{ color: '#22c55e' }}
-                      >
-                        RM {item.cheapest!.price.toFixed(2)}
-                      </span>
-
-                      {/* Variance chip */}
-                      {variancePct !== null && pricesWithData.length > 1 && (
-                        <span
-                          className="mono text-xs font-semibold px-1.5 py-0.5 rounded-full"
-                          style={{
-                            background:
-                              variancePct <= 0
-                                ? 'rgba(34,197,94,0.10)'
-                                : 'rgba(251,191,36,0.10)',
-                            color:
-                              variancePct <= 0 ? '#22c55e' : '#fbbf24',
-                            border:
-                              variancePct <= 0
-                                ? '1px solid rgba(34,197,94,0.22)'
-                                : '1px solid rgba(251,191,36,0.22)',
-                          }}
-                        >
-                          {variancePct > 0 ? '+' : ''}
-                          {variancePct.toFixed(0)}%
+                  {/* Item Name */}
+                  <td className="px-8 py-5 font-semibold text-[#dee1f7]">
+                    {item.item_name}
+                  </td>
+                  
+                  {/* Cheapest Store */}
+                  <td className="px-8 py-5 text-[#bccbb9]">
+                    {cheapest?.premise ?? (
+                      <span className="text-[#bccbb9]/30 italic">No store found</span>
+                    )}
+                  </td>
+                  
+                  {/* State */}
+                  <td className="px-8 py-5 text-[#bccbb9]">
+                    {cheapest?.state ?? (
+                      <span className="text-[#bccbb9]/30">—</span>
+                    )}
+                  </td>
+                  
+                  {/* Best Price */}
+                  <td className={`px-8 py-5 font-bold font-mono text-sm ${hasCheapest ? 'text-[#22c55e]' : 'text-[#bccbb9]'}`}>
+                    {cheapest ? `RM ${cheapest.price.toFixed(2)}` : '—'}
+                  </td>
+                  
+                  {/* vs Average */}
+                  <td className="px-8 py-5 text-right font-mono">
+                    {hasCheapest && pricesWithData.length > 1 ? (
+                      variance <= 0 ? (
+                        <span className="bg-[#22c55e]/15 text-[#22c55e] border border-[#22c55e]/25 px-2.5 py-0.5 rounded-full text-[10px] font-bold">
+                          - RM {Math.abs(variance).toFixed(2)}
                         </span>
-                      )}
-                    </>
-                  ) : (
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-400/10 text-yellow-400 border border-yellow-400/30">
-                      No price data
-                    </span>
-                  )}
-                  <span
-                    className="text-xs transition-transform duration-200"
-                    style={{
-                      color: '#8e9099',
-                      transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                      display: 'inline-block',
-                    }}
-                  >
-                    ▾
-                  </span>
-                </span>
-              </button>
+                      ) : (
+                        <span className="bg-[#ffb5ab]/15 text-[#ffb5ab] border border-[#ffb5ab]/25 px-2.5 py-0.5 rounded-full text-[10px] font-bold">
+                          + RM {variance.toFixed(2)}
+                        </span>
+                      )
+                    ) : (
+                      <span className="text-[#bccbb9]/30">—</span>
+                    )}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
 
-              {/* Expandable detail */}
-              <div
-                style={{
-                  maxHeight: isOpen ? '200px' : '0',
-                  overflow: 'hidden',
-                  transition: 'max-height 0.25s ease',
-                }}
-              >
-                {hasCheapest && (
-                  <div
-                    className="px-3 pb-3 pt-1"
-                    style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
-                  >
-                    <div
-                      className="rounded-lg p-3 flex flex-col gap-1"
-                      style={{ background: 'rgba(255,255,255,0.03)' }}
-                    >
-                      <p
-                        className="text-sm font-semibold"
-                        style={{ color: '#e2e2e6' }}
-                      >
-                        {item.cheapest!.premise}
-                      </p>
-                      <p className="text-xs" style={{ color: '#8e9099' }}>
-                        {item.cheapest!.state}
-                      </p>
-                      <p
-                        className="mono text-sm mt-1"
-                        style={{ color: '#22c55e' }}
-                      >
-                        RM {item.cheapest!.price.toFixed(2)}
-                      </p>
-                      {variancePct !== null && pricesWithData.length > 1 && (
-                        <p className="text-xs mt-0.5" style={{ color: '#8e9099' }}>
-                          {variancePct <= 0
-                            ? `${Math.abs(variancePct).toFixed(0)}% below avg`
-                            : `${variancePct.toFixed(0)}% above avg`}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </li>
-          )
-        })}
-      </ul>
-    </GlassCard>
+    </div>
   )
 }

@@ -1,10 +1,8 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Download, Search } from 'lucide-react'
+import { Search } from 'lucide-react'
 import type { BasketResult } from '@/lib/types'
-import { exportBasketCsv } from '@/lib/exportCsv'
-import { Button } from '@/components/ui/Button'
 import { SummaryStats } from './SummaryStats'
 import { StateChart } from './StateChart'
 import { MatchesTable } from './MatchesTable'
@@ -37,49 +35,42 @@ export function ResultsSection({
   const cheapestPremise =
     result.items.find((i) => i.cheapest)?.cheapest?.premise ?? null
 
-  function handleCsvExport() {
-    exportBasketCsv(result)
-  }
+  const totalItems = matchedItems.length + result.unresolved.length
 
   return (
     <motion.section
-      className={`flex flex-col gap-6 ${className}`}
+      className={`flex flex-col gap-8 ${className}`}
       aria-label="Optimization results"
       variants={containerVariants}
       initial="hidden"
       animate="show"
     >
-      {/* ── Action bar ──────────────────────────────────────────────────── */}
-      <motion.div
-        variants={childVariants}
-        className="flex items-center justify-between gap-4 flex-wrap"
+      
+      {/* ── Page Header Section ────────────────────────────────────────────── */}
+      {/* ── Page Header Section ────────────────────────────────────────────── */}
+      <motion.header 
+        variants={childVariants} 
+        className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 select-none"
       >
-        <h2 className="font-semibold text-sm uppercase tracking-widest" style={{ color: '#8e9099', letterSpacing: '0.1em' }}>
-          Optimization Results
-        </h2>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleCsvExport}
-            className="flex items-center gap-1.5"
-          >
-            <Download size={13} strokeWidth={2} />
-            Export CSV
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onReset}
-            className="flex items-center gap-1.5"
-          >
-            <Search size={13} strokeWidth={2} />
-            New Search
-          </Button>
+        <div className="space-y-2">
+          <h1 className="font-sans text-3xl font-extrabold text-[#22c55e] tracking-tight">
+            Price Optimization
+          </h1>
+          <p className="text-[#bccbb9] text-sm">
+            Based on your basket of {totalItems} item{totalItems !== 1 ? 's' : ''} across Malaysia's retailers.
+          </p>
         </div>
-      </motion.div>
 
-      {/* ── Summary stats ────────────────────────────────────────────────── */}
+        <button
+          onClick={onReset}
+          type="button"
+          className="shimmer flex items-center gap-2 px-6 py-2.5 bg-[#22c55e] text-[#0e1322] rounded-xl font-bold shadow-lg shadow-[#22c55e]/20 active:scale-95 transition-all text-xs uppercase tracking-wider cursor-pointer self-start md:self-auto shrink-0"
+        >
+          <span>New Intelligence Search</span>
+          <Search size={14} />
+        </button>
+      </motion.header>
+
       <motion.div variants={childVariants}>
         <SummaryStats
           total={result.total}
@@ -91,24 +82,27 @@ export function ResultsSection({
         />
       </motion.div>
 
-      {result.items.length > 0 && (
-        <motion.div variants={childVariants}>
-          <StateChart items={result.items} />
-        </motion.div>
-      )}
+        variants={childVariants}
+        className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start"
+      >
+        {/* Left: Progress Chart (60% width) */}
+        <div className="lg:col-span-8 h-full">
+          <StateChart items={result.items} total={result.total} />
+        </div>
 
-      <motion.div variants={childVariants}>
-        <MatchesTable
-          matches={result.matches}
-          unresolved={result.unresolved}
-        />
+          <MatchesTable
+            matches={result.matches}
+            unresolved={result.unresolved}
+          />
+        </div>
       </motion.div>
 
       {result.items.length > 0 && (
-        <motion.div variants={childVariants}>
+        <motion.div variants={childVariants} className="space-y-6">
           <ItemPriceList items={result.items} />
         </motion.div>
       )}
+
     </motion.section>
   )
 }

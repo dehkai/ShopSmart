@@ -1,8 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
-import { CheckCircle, MapPin } from 'lucide-react'
-import { StatCard } from '@/components/ui/StatCard'
+import { CheckCircle, TrendingUp, AlertTriangle, MapPin } from 'lucide-react'
 import type { BasketItemResult } from '@/lib/types'
 
 interface SummaryStatsProps {
@@ -12,18 +10,6 @@ interface SummaryStatsProps {
   unresolvedCount: number
   cheapestPremise: string | null
   items: BasketItemResult[]
-}
-
-const EASE = [0.16, 1, 0.3, 1] as const
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 12, scale: 0.97 },
-  show: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { duration: 0.38, ease: EASE },
-  },
 }
 
 /** Most frequent state across cheapest prices */
@@ -50,213 +36,75 @@ export function SummaryStats({
   const topState = deriveTopState(items)
 
   return (
-    <div className="flex flex-col gap-4">
-
-      {/* ── Hero totals banner ──────────────────────────────────────────── */}
-      <motion.div
-        className="glass p-6 flex flex-col sm:flex-row items-center justify-between gap-6"
-        style={{
-          borderRadius: '16px',
-          background: 'rgba(34,197,94,0.04)',
-          borderColor: 'rgba(34,197,94,0.18)',
-        }}
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: EASE }}
-      >
-
-        {/* Best total */}
-        <div className="flex flex-col items-center sm:items-start gap-1.5">
-          <div className="flex items-center gap-2">
-            <span
-              className="text-xs font-semibold uppercase tracking-widest"
-              style={{ color: '#22c55e', letterSpacing: '0.12em' }}
-            >
-              Best total
-            </span>
-            <span className="chip-verified">
-              <CheckCircle size={10} strokeWidth={2.5} />
-              verified
-            </span>
-          </div>
-          <span
-            className="mono font-extrabold"
-            style={{
-              fontSize: 'clamp(2rem, 5vw, 2.8rem)',
-              color: '#22c55e',
-              letterSpacing: '-0.03em',
-              lineHeight: 1,
-            }}
-          >
-            RM {total.toFixed(2)}
-          </span>
-          {topState && (
-            <span
-              className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full"
-              style={{
-                background: 'rgba(34,197,94,0.08)',
-                color: '#22c55e',
-                border: '1px solid rgba(34,197,94,0.18)',
-              }}
-            >
-              <MapPin size={10} strokeWidth={2} />
-              {topState}
-            </span>
-          )}
-        </div>
-
-        {/* Divider */}
-        <div
-          className="hidden sm:block w-px h-16"
-          style={{ background: 'rgba(255,255,255,0.08)' }}
-        />
-
-        {/* You save */}
-        <div className="flex flex-col items-center gap-1.5">
-          <span
-            className="text-xs font-semibold uppercase tracking-widest"
-            style={{ color: '#60a5fa', letterSpacing: '0.12em' }}
-          >
-            You save
-          </span>
-          <span
-            className="mono font-extrabold text-4xl"
-            style={{
-              color: savings > 0 ? '#60a5fa' : '#44474e',
-              letterSpacing: '-0.03em',
-            }}
-          >
-            {savings > 0 ? `RM ${savings.toFixed(2)}` : '—'}
-          </span>
-          <span className="text-xs" style={{ color: '#8e9099' }}>
-            vs most expensive basket
+    <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+      
+      {/* ── Best Total Card ─────────────────────────────────────────────────── */}
+      <div className="glass-card p-6 rounded-xl flex flex-col justify-between h-40">
+        <div className="text-[10px] font-bold uppercase tracking-widest text-[#bccbb9] flex justify-between items-center">
+          <span>Best Total</span>
+          <span className="text-[#22c55e] flex items-center">
+            <CheckCircle size={12} strokeWidth={2.5} />
           </span>
         </div>
-
-        {/* Divider */}
-        <div
-          className="hidden sm:block w-px h-16"
-          style={{ background: 'rgba(255,255,255,0.08)' }}
-        />
-
-        {/* Items matched */}
-        <div className="flex flex-col items-center gap-1.5">
-          <span
-            className="text-xs font-semibold uppercase tracking-widest"
-            style={{ color: '#8e9099', letterSpacing: '0.12em' }}
-          >
-            Items matched
-          </span>
-          <span
-            className="mono font-extrabold text-4xl"
-            style={{
-              color: unresolvedCount > 0 ? '#fbbf24' : '#22c55e',
-              letterSpacing: '-0.03em',
-            }}
-          >
-            {matchedCount}/{totalItems}
-          </span>
-          {unresolvedCount > 0 && (
-            <span className="text-xs" style={{ color: '#fbbf24' }}>
-              ⚠ {unresolvedCount} not found
-            </span>
-          )}
+        <div className="font-mono text-3xl font-extrabold text-[#22c55e] my-auto">
+          RM {total.toFixed(2)}
         </div>
+        <div className="text-xs text-[#bccbb9]/80 flex items-center gap-1">
+          <MapPin size={12} className="text-[#22c55e]" />
+          <span>{topState ?? 'Malaysia'}</span>
+        </div>
+      </div>
 
-        {/* Divider */}
-        <div
-          className="hidden sm:block w-px h-16"
-          style={{ background: 'rgba(255,255,255,0.08)' }}
-        />
+      {/* ── You Save Card ───────────────────────────────────────────────────── */}
+      <div className="glass-card p-6 rounded-xl flex flex-col justify-between h-40">
+        <div className="text-[10px] font-bold uppercase tracking-widest text-[#bccbb9]">
+          You Save
+        </div>
+        <div className="font-mono text-3xl font-extrabold text-[#22c55e] my-auto flex items-center gap-2">
+          {savings > 0 ? `RM ${savings.toFixed(2)}` : '—'}
+          {savings > 0 && <TrendingUp size={20} className="text-[#22c55e]" />}
+        </div>
+        <div className="text-xs text-[#bccbb9]/60">
+          vs most expensive region
+        </div>
+      </div>
 
-        {/* Cheapest store */}
-        <div className="flex flex-col items-center sm:items-end gap-1.5">
-          <span
-            className="text-xs font-semibold uppercase tracking-widest"
-            style={{ color: '#8e9099', letterSpacing: '0.12em' }}
-          >
-            Best store
-          </span>
-          {cheapestPremise ? (
+      {/* ── Items Matched Card ───────────────────────────────────────────────── */}
+      <div className="glass-card p-6 rounded-xl flex flex-col justify-between h-40">
+        <div className="text-[10px] font-bold uppercase tracking-widest text-[#bccbb9]">
+          Items Matched
+        </div>
+        <div className="font-mono text-3xl font-extrabold text-[#dee1f7] my-auto">
+          {matchedCount}/{totalItems}
+        </div>
+        <div className={`text-xs flex items-center gap-1 ${unresolvedCount > 0 ? 'text-[#ffb5ab]' : 'text-[#22c55e]'}`}>
+          {unresolvedCount > 0 ? (
             <>
-              <span
-                className="flex items-center gap-1.5 text-sm font-semibold text-center sm:text-right"
-                style={{ color: '#e2e2e6', maxWidth: '16ch', lineHeight: 1.3 }}
-              >
-                <MapPin
-                  size={13}
-                  strokeWidth={2}
-                  style={{ color: '#60a5fa', flexShrink: 0 }}
-                />
-                {cheapestPremise}
-              </span>
-              {topState && (
-                <span className="text-xs" style={{ color: '#8e9099' }}>
-                  {topState} Region
-                </span>
-              )}
+              <AlertTriangle size={12} />
+              <span>{unresolvedCount} unmatched item{unresolvedCount !== 1 ? 's' : ''}</span>
             </>
           ) : (
-            <span className="text-2xl font-bold" style={{ color: '#44474e' }}>
-              —
-            </span>
+            <>
+              <CheckCircle size={12} />
+              <span>All resolved</span>
+            </>
           )}
         </div>
-      </motion.div>
+      </div>
 
-      {/* ── Stat cards row ──────────────────────────────────────────────── */}
-      <motion.div
-        className="grid grid-cols-2 lg:grid-cols-4 gap-4"
-        variants={{
-          hidden: {},
-          show: { transition: { staggerChildren: 0.08 } },
-        }}
-        initial="hidden"
-        animate="show"
-      >
-        <motion.div variants={cardVariants}>
-          <StatCard
-            label="Cheapest basket"
-            value={`RM ${total.toFixed(2)}`}
-            subtext="across all matched items"
-            accent="green"
-            mono
-          />
-        </motion.div>
-        <motion.div variants={cardVariants}>
-          <StatCard
-            label="Savings vs worst"
-            value={savings > 0 ? `RM ${savings.toFixed(2)}` : '—'}
-            subtext={
-              savings > 0 ? 'vs most expensive basket' : 'no comparison data'
-            }
-            accent="blue"
-            mono
-          />
-        </motion.div>
-        <motion.div variants={cardVariants}>
-          <StatCard
-            label="Items matched"
-            value={`${matchedCount} / ${totalItems}`}
-            subtext={
-              unresolvedCount > 0
-                ? `${unresolvedCount} not found`
-                : 'all resolved'
-            }
-            accent={unresolvedCount > 0 ? 'white' : 'green'}
-          />
-        </motion.div>
-        <motion.div variants={cardVariants}>
-          <StatCard
-            label="Best single store"
-            value={cheapestPremise ?? '—'}
-            subtext={
-              cheapestPremise ? 'cheapest for full basket' : 'no data'
-            }
-            accent="green"
-          />
-        </motion.div>
-      </motion.div>
-    </div>
+      {/* ── Best Store Card ─────────────────────────────────────────────────── */}
+      <div className="glass-card p-6 rounded-xl flex flex-col justify-between h-40">
+        <div className="text-[10px] font-bold uppercase tracking-widest text-[#bccbb9]">
+          Best Store
+        </div>
+        <div className="text-base font-bold text-[#dee1f7] uppercase tracking-tight my-auto line-clamp-2 leading-tight">
+          {cheapestPremise ?? '—'}
+        </div>
+        <div className="text-xs text-[#bccbb9]/60">
+          {topState ? `${topState} Region` : 'Malaysia'}
+        </div>
+      </div>
+
+    </section>
   )
 }
