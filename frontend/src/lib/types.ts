@@ -1,0 +1,40 @@
+// TypeScript interfaces mirroring backend/src/models.py exactly
+
+export interface ItemMatch {
+  query: string
+  item_code: number | null
+  item_name: string | null
+  confidence: number // 0.0–1.0
+  resolved: boolean
+}
+
+export interface PremisePrice {
+  premise_code: number
+  premise: string
+  state: string
+  price: number
+}
+
+export interface BasketItemResult {
+  item_code: number
+  item_name: string
+  cheapest: PremisePrice | null
+}
+
+export interface BasketResult {
+  matches: ItemMatch[]
+  items: BasketItemResult[]
+  total: number
+  savings: number
+  unresolved: string[]
+}
+
+export interface BasketRequest {
+  items: string[]
+  state?: string
+}
+
+export interface ApiError {
+  message: string
+  status?: number
+}

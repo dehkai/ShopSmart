@@ -1,0 +1,171 @@
+@import "tailwindcss";
+
+@theme {
+  /* Surface layers */
+  --color-surface:           #0e1322;
+  --color-surface-dim:       #0a0f1c;
+  --color-surface-low:       #161b2b;
+  --color-surface-container: #1c2132;
+  --color-surface-high:      #272c3d;
+  --color-surface-highest:   #323749;
+
+  /* Text */
+  --color-on-surface:        #e2e2e6;
+  --color-on-surface-muted:  #c4c6d0;
+
+  /* Borders */
+  --color-outline:           #8e9099;
+  --color-outline-subtle:    #44474e;
+
+  /* Brand */
+  --color-primary:           #22c55e;
+  --color-primary-dim:       #16a34a;
+  --color-primary-container: #005323;
+  --color-on-primary:        #003915;
+
+  --color-secondary:         #60a5fa;
+  --color-secondary-container: #003063;
+
+  /* Status */
+  --color-error:             #ffb4ab;
+  --color-warning:           #fbbf24;
+
+  /* Fonts */
+  --font-sans: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Geist Mono', ui-monospace, monospace;
+
+  /* Border radius */
+  --radius-sm:   4px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-xl:   24px;
+  --radius-full: 9999px;
+}
+
+/* Base */
+html {
+  background-color: #0e1322;
+  color: #e2e2e6;
+}
+
+/* Film grain overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.022;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Glassmorphism card */
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: var(--radius-md);
+}
+
+.glass-hover {
+  transition: border-color 200ms ease, background-color 200ms ease, box-shadow 200ms ease;
+}
+.glass-hover:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 24px rgba(34, 197, 94, 0.07);
+}
+
+/* Textarea focus glow */
+.textarea-glow:focus {
+  border-color: rgba(34, 197, 94, 0.45) !important;
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.2), 0 0 20px rgba(34, 197, 94, 0.08);
+  outline: none;
+}
+
+/* Monospace numbers utility */
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Button shimmer sweep */
+.btn-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.btn-shimmer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.20) 50%,
+    transparent 65%
+  );
+  transform: translateX(-200%);
+}
+.btn-shimmer:hover:not(:disabled)::before {
+  animation: shimmer-sweep 0.55s ease forwards;
+}
+
+@keyframes shimmer-sweep {
+  from { transform: translateX(-200%); }
+  to   { transform: translateX(250%); }
+}
+
+/* Animations */
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up {
+  animation: fade-in-up 0.35s ease-out forwards;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.animate-spin {
+  animation: spin 0.7s linear infinite;
+}
+
+/* Live pulse dot */
+@keyframes pulse-opacity {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.25; }
+}
+.pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+  animation: pulse-opacity 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+/* Verified chip */
+.chip-verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: rgba(34, 197, 94, 0.12);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.24);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
