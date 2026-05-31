@@ -3,7 +3,7 @@ __pycache__/
 *.pyc
 .env
 *.db
-data/raw/*.csv
+data/raw/*.parquet
 .pytest_cache/
 .ruff_cache/
 .DS_Store
