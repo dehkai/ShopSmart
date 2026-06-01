@@ -4,9 +4,11 @@ import json
 import sqlite3
 from typing import List, Tuple
 from pathlib import Path
-from models import ItemMatch
-from pydantic import BaseModel
+
+from pydantic import BaseModel, ValidationError
 from rapidfuzz import fuzz, process
+
+from models import ItemMatch
 from week_2.prompt_model import prompt_model
 
 
@@ -88,7 +90,8 @@ def fetch_db_items(db_path: Path) -> List[Tuple[int, str, str]]:
     return rows
 
 
-# --- layer 2 : llm function that send the grocery lines to gemini with a list of items from the db & asks it to return json matches ---
+# --- layer 2 : LLM function that sends the grocery lines to gemini 
+# with a list of items from the db & asks it to return json matches ---
 def llm_match(query_text: str, db_context: List[Tuple[int, str, str]]) -> str:
     
     # format the structured tuple list into a clean, text-based catalog for the LLM
@@ -118,6 +121,46 @@ def llm_match(query_text: str, db_context: List[Tuple[int, str, str]]) -> str:
     response = prompt_model("gemini-2.5-flash-lite", matcher_prompt)
     return response
 
+# --- layer 3: tries LLM first, validate results, then falls back to fuzzy matching if needed ---
+def match_items(query_text: str, db_items: List[Tuple[int, str, str]]) -> MatcherResponse:
+    print(f"Attempting item match via LLM for: '{query_text}'...")
+
+    # get raw llm output and clean it
+    raw_llm_output = llm_match(query_text, db_items)
+    llm_json_output = raw_llm_output.strip()
+    llm_json_output = re.sub(r'^\s*```json', '', llm_json_output)
+    llm_json_output = re.sub(r'\s*```$', '', llm_json_output)
+
+    # get valid item codes from db for verification
+    valid_db_codes = {item[0] for item in db_items}
+    final_matches: List[ItemMatch] = []
+
+    try:
+
+        llm_response = MatcherResponse.model_validate_json(llm_json_output)
+
+        for match in llm_response.matches:
+
+            is_valid_code = match.item_code in valid_db_codes
+            is_confident = match.confidence >= 0.7
+
+            # check for resolve, item_code exists in db, high confidence
+            if match.resolved and match.item_code and is_valid_code and is_confident:
+                final_matches.append(match)
+            else:
+                # fallback to fuzzy_match()
+                print(f"LLM item match failed validation for '{match.query}'. Falling back to fuzzy match...")
+                fallback_results = fuzzy_match(match.query, db_items)
+                if fallback_results:
+                    final_matches.append(fallback_results[0])
+
+    except (ValidationError, json.JSONDecodeError) as e:
+        # fallback to fuzzy_match()
+        print(f"LLM returned invalid structure: {e}. Executing full fuzzy match fallback...")
+        final_matches = fuzzy_match(query_text, db_items)
+
+    return MatcherResponse(matches=final_matches)
+
 def main():
     # test input = "telur gred A, beras 5kg, minyak masak"
     # capture input from terminal execution: uv run matcher.py <test input>
@@ -134,21 +177,11 @@ def main():
     print("Fetching reference catalog from database...")
     db_items_context = fetch_db_items(db_file)
 
-    print(f"Processing semantic matches for: '{user_query}'...")
-    raw_json_output = llm_match(user_query, db_items_context)
+    # call three-layered item matching
+    final_response = match_items(user_query, db_items_context)
 
-    fuzzy_match_results = fuzzy_match(user_query, db_items_context)
-
-    print("\n--- Match Results ---")
-    
-    llm_json_output = raw_json_output.strip()
-    llm_json_output = re.sub(r'^\s*```json', '', llm_json_output)
-    llm_json_output = re.sub(r'\s*```$', '', llm_json_output)
-    print(llm_json_output)
-
-    response_wrapper = MatcherResponse(matches=fuzzy_match_results)
-    fuzzy_json_output = response_wrapper.model_dump_json(indent=2)
-    print(fuzzy_json_output)
+    print("\n--- Final Validated Match Results ---")
+    print(final_response.model_dump_json(indent=2))
 
 
 if __name__ == "__main__":
