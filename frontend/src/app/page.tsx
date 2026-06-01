@@ -94,6 +94,7 @@ export default function Home() {
                       onChange={setBasketText}
                       onSubmit={handleSubmit}
                       loading={loading}
+                      error={error}
                     />
                   </div>
                 </div>

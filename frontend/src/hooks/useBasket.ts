@@ -83,6 +83,11 @@ export function useBasket() {
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
 
+  const handleChange = useCallback((val: string) => {
+    setBasketText(val)
+    if (error) setError(null)
+  }, [error])
+
   const handleSubmit = useCallback(async () => {
     const items = basketText
       .split('\n')
@@ -128,7 +133,7 @@ export function useBasket() {
 
   return {
     basketText,
-    setBasketText,
+    setBasketText: handleChange,
     selectedState,
     setSelectedState,
     result,
