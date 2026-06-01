@@ -8,8 +8,8 @@ from pathlib import Path
 from pydantic import BaseModel, ValidationError
 from rapidfuzz import fuzz, process
 
-from models import ItemMatch
-from week_2.prompt_model import prompt_model
+from src.models import ItemMatch
+from src.week_2.prompt_model import prompt_model
 
 
 class MatcherResponse(BaseModel):
@@ -107,8 +107,9 @@ def llm_match(query_text: str, db_context: List[Tuple[int, str, str]]) -> str:
         ### TASKS:
         1. Parse the following messy user input string: "{query_text}"
         2. For each identified grocery item in the input, find the absolute best semantic match from the provided Official Database Catalog. Take both the Item Name and its corresponding Unit into consideration.
-        3. If an item matches reasonably well, populate the item_code and item_name from the catalog, calculate a confidence score (0.0 to 1.0), and set resolved to true.
-        4. If no logical match exists in the catalog, set item_code and item_name to null, and resolved to false.
+        3. You must select exactly ONE best matching item_code from the catalog per input item. Do not return multiple brands or options for a single item.
+        4. If an item matches reasonably well, populate the item_code and item_name from the catalog, calculate a confidence score (0.0 to 1.0), and set resolved to true.
+        5. If no logical match exists in the catalog, set item_code and item_name to null, and resolved to false.
 
         ### OFFICIAL DATABASE CATALOG:
         {formatted_db_context}
