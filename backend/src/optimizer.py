@@ -6,19 +6,32 @@ def _placeholders(n: int) -> str:
     return ",".join(["?"] * n)
 
 
-def find_cheapest_item(item_code: int, db_path: str) -> PremisePrice | None:
+def find_cheapest_item(item_code: int, db_path: str, state: str | None = None) -> PremisePrice | None:
     with sqlite3.connect(db_path) as conn:
-        row = conn.execute(
-            """
-            SELECT prices.premise_code, premises.premise, premises.state, prices.price
-            FROM prices
-            JOIN premises ON prices.premise_code = premises.premise_code
-            WHERE prices.item_code = ?
-            ORDER BY prices.price ASC
-            LIMIT 1
-            """,
-            (item_code,),
-        ).fetchone()
+        if state:
+            row = conn.execute(
+                """
+                SELECT prices.premise_code, premises.premise, premises.state, prices.price
+                FROM prices
+                JOIN premises ON prices.premise_code = premises.premise_code
+                WHERE prices.item_code = ? AND premises.state = ?
+                ORDER BY prices.price ASC
+                LIMIT 1
+                """,
+                (item_code, state),
+            ).fetchone()
+        else:
+            row = conn.execute(
+                """
+                SELECT prices.premise_code, premises.premise, premises.state, prices.price
+                FROM prices
+                JOIN premises ON prices.premise_code = premises.premise_code
+                WHERE prices.item_code = ?
+                ORDER BY prices.price ASC
+                LIMIT 1
+                """,
+                (item_code,),
+            ).fetchone()
 
     if row is None:
         return None
@@ -26,20 +39,36 @@ def find_cheapest_item(item_code: int, db_path: str) -> PremisePrice | None:
     return PremisePrice(premise_code=row[0], premise=row[1], state=row[2], price=row[3])
 
 
-def find_cheapest_store(item_codes: list[int], db_path: str) -> tuple[int, float] | None:
+def find_cheapest_store(item_codes: list[int], db_path: str, state: str | None = None) -> tuple[int, float] | None:
     with sqlite3.connect(db_path) as conn:
-        row = conn.execute(
-            f"""
-            SELECT prices.premise_code, SUM(prices.price) AS total_price
-            FROM prices
-            WHERE prices.item_code IN ({_placeholders(len(item_codes))})
-            GROUP BY prices.premise_code
-            HAVING COUNT(DISTINCT item_code) = ?
-            ORDER BY total_price ASC
-            LIMIT 1
-            """,
-            (*item_codes, len(item_codes)),
-        ).fetchone()
+        if state:
+            row = conn.execute(
+                f"""
+                SELECT prices.premise_code, SUM(prices.price) AS total_price
+                FROM prices
+                JOIN premises ON prices.premise_code = premises.premise_code
+                WHERE prices.item_code IN ({_placeholders(len(item_codes))})
+                AND premises.state = ?
+                GROUP BY prices.premise_code
+                HAVING COUNT(DISTINCT prices.item_code) = ?
+                ORDER BY total_price ASC
+                LIMIT 1
+                """,
+                (*item_codes, state, len(item_codes)),
+            ).fetchone()
+        else:
+            row = conn.execute(
+                f"""
+                SELECT prices.premise_code, SUM(prices.price) AS total_price
+                FROM prices
+                WHERE prices.item_code IN ({_placeholders(len(item_codes))})
+                GROUP BY prices.premise_code
+                HAVING COUNT(DISTINCT item_code) = ?
+                ORDER BY total_price ASC
+                LIMIT 1
+                """,
+                (*item_codes, len(item_codes)),
+            ).fetchone()
 
     return (row[0], row[1]) if row else None
 
@@ -71,25 +100,41 @@ def state_ranking(item_codes: list[int], db_path: str) -> list[StateRanking]:
     return result
 
 
-def _expensive_total(item_codes: list[int], db_path: str) -> float:
+def _expensive_total(item_codes: list[int], db_path: str, state: str | None = None) -> float:
     with sqlite3.connect(db_path) as conn:
-        row = conn.execute(
-            f"""
-            SELECT SUM(max_price)
-            FROM (
-                SELECT MAX(price) AS max_price
-                FROM prices
-                WHERE item_code IN ({_placeholders(len(item_codes))})
-                GROUP BY item_code
-            )
-            """,
-            item_codes,
-        ).fetchone()
+        if state:
+            row = conn.execute(
+                f"""
+                SELECT SUM(max_price)
+                FROM (
+                    SELECT MAX(p.price) AS max_price
+                    FROM prices p
+                    JOIN premises pr ON p.premise_code = pr.premise_code
+                    WHERE p.item_code IN ({_placeholders(len(item_codes))})
+                    AND pr.state = ?
+                    GROUP BY p.item_code
+                )
+                """,
+                (*item_codes, state),
+            ).fetchone()
+        else:
+            row = conn.execute(
+                f"""
+                SELECT SUM(max_price)
+                FROM (
+                    SELECT MAX(price) AS max_price
+                    FROM prices
+                    WHERE item_code IN ({_placeholders(len(item_codes))})
+                    GROUP BY item_code
+                )
+                """,
+                item_codes,
+            ).fetchone()
 
     return row[0] or 0.0
 
 
-def optimize(matches: list[ItemMatch], db_path: str) -> BasketResult:
+def optimize(matches: list[ItemMatch], db_path: str, state: str | None = None) -> BasketResult:
     resolved = []
     unresolved = []
     items = []
@@ -101,7 +146,7 @@ def optimize(matches: list[ItemMatch], db_path: str) -> BasketResult:
 
         resolved.append(match)
         try:
-            cheapest = find_cheapest_item(match.item_code, db_path)
+            cheapest = find_cheapest_item(match.item_code, db_path, state=state)
         except sqlite3.Error:
             unresolved.append(match.query)
             continue
@@ -119,9 +164,9 @@ def optimize(matches: list[ItemMatch], db_path: str) -> BasketResult:
         return BasketResult(matches=matches, items=[], total=0.0, savings=0.0, unresolved=unresolved)
 
     try:
-        cheapest_store = find_cheapest_store(item_codes, db_path)
+        cheapest_store = find_cheapest_store(item_codes, db_path, state=state)
         cheapest_total = sum(item.cheapest.price for item in items if item.cheapest)
-        priciest_total = _expensive_total(item_codes, db_path)
+        priciest_total = _expensive_total(item_codes, db_path, state=state)
         savings = round(priciest_total - cheapest_total, 2)
         ranking = state_ranking(item_codes, db_path)
     except sqlite3.Error as e:

@@ -20,6 +20,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   const backendPayload = {
     grocery_list: (body.items ?? []).join(', '),
+    state: body.state,
     provider: body.provider,
     model: body.model,
     api_key: body.api_key,
