@@ -1,12 +1,9 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { submitBasket } from '@/lib/api'
 import type { BasketResult, ApiError, ItemMatch, BasketItemResult } from '@/lib/types'
 
-// ── OPTION A: Mock Response Toggle ──────────────────────────────────────────
-// Set this to true to run in local mock sandbox mode for instant UI reviews.
-// Set to false to connect to the actual FastAPI backend.
 const USE_MOCK = true
 
 const MOCK_STORES = [
@@ -24,9 +21,8 @@ function generateMockResult(queries: string[], selectedState: string): BasketRes
   let total = 0
 
   queries.forEach((q, idx) => {
-    // Make items containing 'honey' or every 4th item unresolved to test dashboard warnings
     const isUnresolved = q.toLowerCase().includes('honey') || (idx > 0 && idx % 4 === 0)
-    
+
     if (isUnresolved) {
       matches.push({
         query: q,
@@ -38,13 +34,12 @@ function generateMockResult(queries: string[], selectedState: string): BasketRes
       unresolved.push(q)
     } else {
       const code = 100000 + idx
-      // Clean up inputs like "2kg Red Onions" -> "Red Onions"
       const cleanName = q.replace(/^\d+(kg|g|l|s|pcs|pack|biji)?\s+/i, '')
       const mockName = cleanName.charAt(0).toUpperCase() + cleanName.slice(1)
-      
+
       const basePrice = 4.20 + (idx * 3.10) + (q.length % 4)
       const store = MOCK_STORES[idx % MOCK_STORES.length]
-      
+
       matches.push({
         query: q,
         item_code: code,
@@ -52,7 +47,7 @@ function generateMockResult(queries: string[], selectedState: string): BasketRes
         confidence: 0.82 + (idx % 3) * 0.08,
         resolved: true
       })
-      
+
       items.push({
         item_code: code,
         item_name: mockName,
@@ -82,13 +77,37 @@ export function useBasket() {
   const [result, setResult] = useState<BasketResult | null>(null)
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
+  const [provider, setProvider] = useState<'gemini' | 'groq'>('gemini')
+  const [model, setModel] = useState<string>('gemini-2.5-flash')
+  const [apiKey, setApiKey] = useState<string>('')
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedProvider = localStorage.getItem('shopsmart_selected_provider') as 'gemini' | 'groq' | null
+      const savedModel = localStorage.getItem('shopsmart_selected_model')
+
+      if (savedProvider) {
+        setProvider(savedProvider)
+        const savedKey = localStorage.getItem(`shopsmart_${savedProvider}_api_key`) || ''
+        setApiKey(savedKey)
+      }
+      if (savedModel) {
+        setModel(savedModel)
+      }
+    }
+  }, [])
 
   const handleChange = useCallback((val: string) => {
     setBasketText(val)
     if (error) setError(null)
   }, [error])
 
-  const handleSubmit = useCallback(async () => {
+  const runSubmit = useCallback(async (
+    overrideProvider?: 'gemini' | 'groq',
+    overrideModel?: string,
+    overrideApiKey?: string
+  ) => {
     const items = basketText
       .split('\n')
       .map((l) => l.trim())
@@ -99,12 +118,20 @@ export function useBasket() {
       return
     }
 
+    const currentProvider = overrideProvider || provider
+    const currentModel = overrideModel || model
+    const currentApiKey = overrideApiKey || apiKey
+
+    // If API key is missing, intercept and trigger modal setup!
+    if (!currentApiKey.trim()) {
+      setIsModalOpen(true)
+      return
+    }
+
     setLoading(true)
     setError(null)
 
-    // Option A: Quick Mock Sandbox Mode
     if (USE_MOCK) {
-      // Simulate small dynamic api delay
       await new Promise((resolve) => setTimeout(resolve, 800))
       const data = generateMockResult(items, selectedState)
       setResult(data)
@@ -116,6 +143,9 @@ export function useBasket() {
       const data = await submitBasket({
         items,
         state: selectedState || undefined,
+        provider: currentProvider,
+        model: currentModel,
+        api_key: currentApiKey,
       })
       setResult(data)
     } catch (err) {
@@ -124,7 +154,32 @@ export function useBasket() {
     } finally {
       setLoading(false)
     }
-  }, [basketText, selectedState])
+  }, [basketText, selectedState, provider, model, apiKey])
+
+  const handleSubmit = useCallback(async () => {
+    await runSubmit()
+  }, [runSubmit])
+
+  const handleSaveAPIKey = useCallback((prov: 'gemini' | 'groq', mod: string, key: string) => {
+    setProvider(prov)
+    setModel(mod)
+    setApiKey(key)
+    setIsModalOpen(false)
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('shopsmart_selected_provider', prov)
+      localStorage.setItem('shopsmart_selected_model', mod)
+      if (key) {
+        localStorage.setItem(`shopsmart_${prov}_api_key`, key)
+      } else {
+        localStorage.removeItem(`shopsmart_${prov}_api_key`)
+      }
+    }
+
+    if (key) {
+      runSubmit(prov, mod, key)
+    }
+  }, [runSubmit])
 
   const reset = useCallback(() => {
     setResult(null)
@@ -141,6 +196,13 @@ export function useBasket() {
     error,
     handleSubmit,
     reset,
+
+    provider,
+    model,
+    apiKey,
+    isModalOpen,
+    setIsModalOpen,
+    handleSaveAPIKey,
   }
 }
 

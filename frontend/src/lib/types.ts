@@ -32,6 +32,9 @@ export interface BasketResult {
 export interface BasketRequest {
   items: string[]
   state?: string
+  provider?: 'gemini' | 'groq'
+  model?: string
+  api_key?: string
 }
 
 export interface ApiError {
