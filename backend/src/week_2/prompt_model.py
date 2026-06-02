@@ -9,7 +9,13 @@ _DEV_LLM_PROVIDER = os.environ.get("DEV_LLM_PROVIDER", "").strip().lower()
 _DEV_OLLAMA_MODEL = os.environ.get("DEV_OLLAMA_MODEL", "llama3.1")
 
 OLLAMA_MODELS = {"llama3.1", "phi3", "deepseek-r1:1.5b", "gemma3"}
-GEMINI_MODELS = {"gemini-2.5-flash", "gemini-2.5-flash-lite"}
+GEMINI_MODELS = {
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
+    "gemini-2.5-pro",
+    "gemini-1.5-flash",
+    "gemini-1.5-pro",
+}
 GROQ_MODELS = {
     "llama-3.3-70b-versatile",
     "llama-3.1-8b-instant",
