@@ -14,6 +14,7 @@ class PremisePrice(BaseModel):
     premise: str
     state: str
     price: float
+    address: str | None = None
 
 
 class BasketItemResult(BaseModel):
@@ -32,8 +33,10 @@ class StateRanking(BaseModel):
 class StoreRanking(BaseModel):
     premise_code: int
     premise: str
+    state: str | None = None
     total: float
     items_found: int
+    address: str | None = None
 
 
 class BasketResult(BaseModel):

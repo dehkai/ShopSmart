@@ -11,7 +11,7 @@ def find_cheapest_item(item_code: int, db_path: str, state: str | None = None) -
         if state:
             row = conn.execute(
                 """
-                SELECT prices.premise_code, premises.premise, premises.state, prices.price
+                SELECT prices.premise_code, premises.premise, premises.state, prices.price, premises.address
                 FROM prices
                 JOIN premises ON prices.premise_code = premises.premise_code
                 WHERE prices.item_code = ? AND premises.state = ?
@@ -23,7 +23,7 @@ def find_cheapest_item(item_code: int, db_path: str, state: str | None = None) -
         else:
             row = conn.execute(
                 """
-                SELECT prices.premise_code, premises.premise, premises.state, prices.price
+                SELECT prices.premise_code, premises.premise, premises.state, prices.price, premises.address
                 FROM prices
                 JOIN premises ON prices.premise_code = premises.premise_code
                 WHERE prices.item_code = ?
@@ -36,7 +36,25 @@ def find_cheapest_item(item_code: int, db_path: str, state: str | None = None) -
     if row is None:
         return None
 
-    return PremisePrice(premise_code=row[0], premise=row[1], state=row[2], price=row[3])
+    return PremisePrice(premise_code=row[0], premise=row[1], state=row[2], price=row[3], address=row[4])
+
+
+def get_premise_info(premise_code: int, db_path: str) -> tuple[str, str, str | None] | None:
+    with sqlite3.connect(db_path) as conn:
+        row = conn.execute(
+            "SELECT premise, state, address FROM premises WHERE premise_code = ? LIMIT 1",
+            (premise_code,),
+        ).fetchone()
+    return (row[0], row[1], row[2]) if row else None
+
+
+def get_item_price_at_store(item_code: int, premise_code: int, db_path: str) -> float | None:
+    with sqlite3.connect(db_path) as conn:
+        row = conn.execute(
+            "SELECT price FROM prices WHERE item_code = ? AND premise_code = ? LIMIT 1",
+            (item_code, premise_code),
+        ).fetchone()
+    return row[0] if row else None
 
 
 def find_cheapest_store(item_codes: list[int], db_path: str, state: str | None = None) -> tuple[int, float] | None:
@@ -77,18 +95,20 @@ def state_ranking(item_codes: list[int], db_path: str) -> list[StateRanking]:
     with sqlite3.connect(db_path) as conn:
         rows = conn.execute(
             f"""
-            SELECT t.state, SUM(t.min_price) AS total, COUNT(*) AS items_found
+            SELECT pr.state, MIN(store_total) AS total, ? AS items_found
             FROM (
-                SELECT pr2.state, MIN(p.price) AS min_price
+                SELECT pr.state, p.premise_code, SUM(p.price) AS store_total
                 FROM prices p
-                JOIN premises pr2 ON p.premise_code = pr2.premise_code
+                JOIN premises pr ON p.premise_code = pr.premise_code
                 WHERE p.item_code IN ({_placeholders(len(item_codes))})
-                GROUP BY pr2.state, p.item_code
+                GROUP BY pr.state, p.premise_code
+                HAVING COUNT(DISTINCT p.item_code) = ?
             ) t
-            GROUP BY t.state
+            JOIN premises pr ON t.premise_code = pr.premise_code
+            GROUP BY pr.state
             ORDER BY total ASC
             """,
-            item_codes,
+            (len(item_codes), *item_codes, len(item_codes)),
         ).fetchall()
 
     seen: set[str] = set()
@@ -103,12 +123,16 @@ def state_ranking(item_codes: list[int], db_path: str) -> list[StateRanking]:
 def top_stores_in_state(
     item_codes: list[int], db_path: str, state: str, limit: int = 5
 ) -> list[StoreRanking]:
-            SELECT pr.premise_code, pr.premise, SUM(p.price) AS total, COUNT(DISTINCT p.item_code) AS items_found
+
+    with sqlite3.connect(db_path) as conn:
+        rows = conn.execute(
+            f"""
+            SELECT pr.premise_code, pr.premise, pr.state, SUM(p.price) AS total, COUNT(DISTINCT p.item_code) AS items_found, pr.address
             FROM prices p
             JOIN premises pr ON p.premise_code = pr.premise_code
             WHERE p.item_code IN ({_placeholders(len(item_codes))})
             AND pr.state = ?
-            GROUP BY pr.premise_code, pr.premise
+            GROUP BY pr.premise_code, pr.premise, pr.state, pr.address
             HAVING COUNT(DISTINCT p.item_code) = ?
             ORDER BY total ASC
             LIMIT ?
@@ -120,12 +144,12 @@ def top_stores_in_state(
         if not rows:
             rows = conn.execute(
                 f"""
-                SELECT pr.premise_code, pr.premise, SUM(p.price) AS total, COUNT(DISTINCT p.item_code) AS items_found
+                SELECT pr.premise_code, pr.premise, pr.state, SUM(p.price) AS total, COUNT(DISTINCT p.item_code) AS items_found, pr.address
                 FROM prices p
                 JOIN premises pr ON p.premise_code = pr.premise_code
                 WHERE p.item_code IN ({_placeholders(len(item_codes))})
                 AND pr.state = ?
-                GROUP BY pr.premise_code, pr.premise
+                GROUP BY pr.premise_code, pr.premise, pr.state, pr.address
                 ORDER BY items_found DESC, total ASC
                 LIMIT ?
                 """,
@@ -136,8 +160,10 @@ def top_stores_in_state(
         StoreRanking(
             premise_code=row[0],
             premise=row[1],
-            total=round(row[2], 2),
-            items_found=row[3],
+            state=row[2],
+            total=round(row[3], 2),
+            items_found=row[4],
+            address=row[5],
         )
         for row in rows
     ]
@@ -210,9 +236,21 @@ def optimize(matches: list[ItemMatch], db_path: str, state: str | None = None) -
         cheapest_store = find_cheapest_store(item_codes, db_path, state=state)
         cheapest_total = sum(item.cheapest.price for item in items if item.cheapest)
         average_total = _average_total(item_codes, db_path, state=state)
-        savings = round(average_total - cheapest_total, 2)
         ranking = state_ranking(item_codes, db_path)
-        store_rank = top_stores_in_state(item_codes, db_path, state) if state else []
+        if state:
+            store_rank = top_stores_in_state(item_codes, db_path, state)
+        elif cheapest_store:
+            info = get_premise_info(cheapest_store[0], db_path)
+            store_rank = [StoreRanking(
+                premise_code=cheapest_store[0],
+                premise=info[0] if info else f"Store {cheapest_store[0]}",
+                state=info[1] if info else None,
+                total=round(cheapest_store[1], 2),
+                items_found=len(item_codes),
+                address=info[2] if info else None,
+            )] if info else []
+        else:
+            store_rank = []
     except sqlite3.Error as e:
         return BasketResult(
             matches=matches,
@@ -221,12 +259,35 @@ def optimize(matches: list[ItemMatch], db_path: str, state: str | None = None) -
             error=f"Database error: {e}",
         )
 
+    if cheapest_store:
+        best_total = round(cheapest_store[1], 2)
+        is_single_store = True
+        best_premise_code = cheapest_store[0]
+    elif store_rank:
+        # No store stocks all items — use best partial store total
+        best_total = store_rank[0].total
+        is_single_store = False
+        best_premise_code = store_rank[0].premise_code
+    else:
+        # Theoretical cross-store minimum
+        best_total = round(cheapest_total, 2)
+        is_single_store = False
+        best_premise_code = None
+
+    # Populate store_price: price of each item at the recommended basket store
+    if best_premise_code is not None:
+        for item in items:
+            item.store_price = get_item_price_at_store(item.item_code, best_premise_code, db_path)
+
+    savings = round(average_total - best_total, 2)
+
     return BasketResult(
         matches=matches,
         items=items,
         state_ranking=ranking,
         store_ranking=store_rank,
-        total=round(cheapest_store[1], 2) if cheapest_store else round(cheapest_total, 2),
+        total=best_total,
         savings=savings,
+        is_single_store=is_single_store,
         unresolved=unresolved,
     )

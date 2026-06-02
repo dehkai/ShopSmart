@@ -42,6 +42,14 @@ export function ResultsSection({
     result.items.find((i) => i.cheapest)?.cheapest?.premise ??
     null
 
+  const cheapestPremiseState =
+    result.store_ranking?.[0]?.state ?? null
+
+  const cheapestPremiseAddress =
+    result.store_ranking?.[0]?.address ??
+    result.items.find((i) => i.cheapest)?.cheapest?.address ??
+    null
+
   // Use original submitted count as denominator; fall back to LLM output count
   const totalItems = submittedCount ?? (matchedItems.length + result.unresolved.length)
 
@@ -87,6 +95,8 @@ export function ResultsSection({
           totalCount={totalItems}
           unresolvedCount={result.unresolved.length}
           cheapestPremise={cheapestPremise}
+          cheapestPremiseState={cheapestPremiseState}
+          cheapestPremiseAddress={cheapestPremiseAddress}
           items={result.items}
           selectedState={selectedState}
           isSingleStore={result.is_single_store}
@@ -105,6 +115,7 @@ export function ResultsSection({
             storeRanking={result.store_ranking ?? []}
             selectedState={selectedState}
             averageTotal={result.total + result.savings}
+            totalItemCount={totalItems}
           />
         </div>
 
@@ -118,7 +129,7 @@ export function ResultsSection({
 
       {result.items.length > 0 && (
         <motion.div variants={childVariants} className="space-y-6">
-          <ItemPriceList items={result.items} recommendedStore={cheapestPremise ?? undefined} />
+          <ItemPriceList items={result.items} recommendedStore={cheapestPremise ?? undefined} selectedState={selectedState} />
         </motion.div>
       )}
 

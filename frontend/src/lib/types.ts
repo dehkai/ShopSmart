@@ -13,6 +13,7 @@ export interface PremisePrice {
   premise: string
   state: string
   price: number
+  address?: string | null
 }
 
 export interface BasketItemResult {
@@ -31,8 +32,10 @@ export interface StateRanking {
 export interface StoreRanking {
   premise_code: number
   premise: string
+  state?: string | null
   total: number
   items_found: number
+  address?: string | null
 }
 
 export interface BasketResult {
