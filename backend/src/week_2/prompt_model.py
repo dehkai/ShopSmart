@@ -12,18 +12,20 @@ OLLAMA_MODELS = {"llama3.1", "phi3", "deepseek-r1:1.5b", "gemma3"}
 GEMINI_MODELS = {
     "gemini-2.5-flash",
     "gemini-2.5-flash-lite",
-    "gemini-2.5-pro",
-    "gemini-1.5-flash",
-    "gemini-1.5-pro",
+    "gemini-3.5-flash",
+    "gemini-3.1-flash-lite",
+    "gemma-4-26b-a4b-it",
+    "gemma-4-31b-it",
 }
 GROQ_MODELS = {
+    # Production
     "llama-3.3-70b-versatile",
     "llama-3.1-8b-instant",
-    "gemma3-27b-it",
-    "gemma3-12b-it",
-    "gemma3-4b-it",
-    "gemma2-9b-it",
-    "mixtral-8x7b-32768",
+    "openai/gpt-oss-120b",
+    "openai/gpt-oss-20b",
+    # Preview
+    "meta-llama/llama-4-scout-17b-16e-instruct",
+    "qwen/qwen3-32b",
 }
 
 DEFAULT_MODEL = "gemini-2.5-flash-lite"
@@ -90,6 +92,7 @@ def _call_groq(model: str, prompt: str, api_key: str | None = None) -> tuple[str
             headers={
                 "Authorization": f"Bearer {key}",
                 "Content-Type": "application/json",
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             },
             method="POST",
         )
