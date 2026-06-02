@@ -1,30 +1,20 @@
 'use client'
 
-import type { BasketItemResult } from '@/lib/types'
+import type { StateRanking, StoreRanking } from '@/lib/types'
 
 interface StateChartProps {
-  items: BasketItemResult[]
-  total?: number
+  stateRanking: StateRanking[]
+  storeRanking?: StoreRanking[]
+  selectedState?: string
+  /** avg(all stores in state) – used as reference line in store mode */
+  averageTotal?: number
 }
 
-interface StatePriceDatum {
-  state: string
-  price: number
-  percentage: number // for progress width
-}
+// ── State mode (no state selected) ──────────────────────────────────────────
 
-export function StateChart({ items, total = 36.90 }: StateChartProps) {
-  // If we have actual items, we use the total of cheapest items as base, or fall back to 36.90
-  const basePrice = total > 0 ? total : 36.90
-
-  // Standard economic scale variances matching real PriceCatcher regional data
-  const data: StatePriceDatum[] = [
-    { state: 'Selangor', price: basePrice, percentage: 70 },
-    { state: 'Kuala Lumpur', price: basePrice * 1.14, percentage: 78 },
-    { state: 'Pulau Pinang', price: basePrice * 1.19, percentage: 82 },
-    { state: 'Johor', price: basePrice * 1.22, percentage: 85 },
-    { state: 'Perak', price: basePrice * 1.33, percentage: 95 },
-  ]
+function StateMode({ stateRanking }: { stateRanking: StateRanking[] }) {
+  const top5 = stateRanking.slice(0, 5)
+  const maxPrice = Math.max(...top5.map((r) => r.total))
 
   return (
     <div className="glass-card p-8 rounded-xl flex flex-col">
@@ -33,47 +23,38 @@ export function StateChart({ items, total = 36.90 }: StateChartProps) {
           <h3 className="text-sm font-semibold uppercase tracking-widest text-[#bccbb9] mb-1">
             Total Basket Cost by State
           </h3>
-          <p className="text-xs text-[#bccbb9]/60">
-            Across top 5 major economic zones
-          </p>
+          <p className="text-xs text-[#bccbb9]/60">Across top 5 cheapest states</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
           <span className="w-3 h-3 rounded-full bg-[#22c55e] shadow-[0_0_8px_rgba(75,226,119,0.5)]"></span>
-          <span className="w-3 h-3 rounded-full bg-[#8e9099]/30"></span>
+          <span className="text-[10px] text-[#bccbb9]/60 uppercase tracking-wide">cheapest</span>
         </div>
       </div>
 
       <div className="flex-grow flex flex-col gap-6">
-        {data.map((row, idx) => {
+        {top5.map((row, idx) => {
           const isCheapest = idx === 0
+          const barWidth = Math.max(10, (row.total / maxPrice) * 100)
+
           return (
             <div key={row.state} className="flex items-center gap-4">
-              {/* State Name */}
-              <div className="w-24 text-right text-xs font-semibold text-[#dee1f7]">
+              <div className="w-28 text-right text-xs font-semibold text-[#dee1f7]">
                 {row.state}
               </div>
-
-              {/* Progress Bar Track */}
               <div className="flex-grow h-6 bg-white/5 rounded-full relative overflow-hidden">
                 <div
-                  className={`bar-grow absolute h-full rounded-full transition-all duration-1000 ${
-                    isCheapest
+                  className={`bar-grow absolute h-full rounded-full transition-all duration-1000 ${isCheapest
                       ? 'bg-[#22c55e] shadow-[0_0_12px_rgba(34,197,94,0.4)]'
                       : 'bg-white/15'
-                  }`}
-                  style={{
-                    width: `${row.percentage}%`,
-                    animationDelay: `${idx * 0.1}s`,
-                  }}
+                    }`}
+                  style={{ width: `${barWidth}%`, animationDelay: `${idx * 0.1}s` }}
                 />
               </div>
-
               <div
-                className={`w-20 text-xs font-bold font-mono text-right ${
-                  isCheapest ? 'text-[#22c55e]' : 'text-[#bccbb9]'
-                }`}
+                className={`w-20 text-xs font-bold font-mono text-right ${isCheapest ? 'text-[#22c55e]' : 'text-[#bccbb9]'
+                  }`}
               >
-                RM {row.price.toFixed(2)}
+                RM {row.total.toFixed(2)}
               </div>
             </div>
           )
@@ -81,4 +62,151 @@ export function StateChart({ items, total = 36.90 }: StateChartProps) {
       </div>
     </div>
   )
+}
+
+// ── Store mode (state selected) ──────────────────────────────────────────────
+
+function StoreMode({
+  storeRanking,
+  selectedState,
+  itemCount,
+  averageTotal,
+}: {
+  storeRanking: StoreRanking[]
+  selectedState: string
+  itemCount: number
+  averageTotal?: number
+}) {
+  if (storeRanking.length === 0) {
+    return (
+      <div className="glass-card p-8 rounded-xl flex flex-col justify-center items-center gap-3 min-h-[220px]">
+        <p className="text-sm text-[#bccbb9]/60">No stores found in {selectedState} for this basket.</p>
+      </div>
+    )
+  }
+
+  // Scale bars against state average if available (so avg bar = 100%), otherwise use max store price
+  const scaleMax = averageTotal && averageTotal > 0
+    ? Math.max(averageTotal, ...storeRanking.map((r) => r.total))
+    : Math.max(...storeRanking.map((r) => r.total))
+
+  const savings = averageTotal && storeRanking[0]
+    ? averageTotal - storeRanking[0].total
+    : null
+
+  return (
+    <div className="glass-card p-8 rounded-xl flex flex-col">
+      <div className="flex justify-between items-start mb-8">
+        <div>
+          <h3 className="text-sm font-semibold uppercase tracking-widest text-[#bccbb9] mb-1">
+            Cheapest Stores in {selectedState}
+          </h3>
+          <p className="text-xs text-[#bccbb9]/60">
+            Top {storeRanking.length} store{storeRanking.length !== 1 ? 's' : ''} for your basket
+          </p>
+        </div>
+      </div>
+
+      <div className="flex-grow flex flex-col gap-5">
+        {storeRanking.map((row, idx) => {
+          const isBest = idx === 0
+          const barWidth = Math.max(10, (row.total / scaleMax) * 100)
+          const hasPartialStock = row.items_found < itemCount
+
+          return (
+            <div key={row.premise_code} className="flex items-center gap-4">
+              <div className="w-28 text-right flex flex-col items-end">
+                <span className={`text-xs leading-tight line-clamp-2 ${isBest ? 'font-extrabold text-white' : 'font-semibold text-[#dee1f7]'}`}>
+                  {row.premise}
+                </span>
+                {hasPartialStock && (
+                  <span className="text-[10px] text-[#ffb5ab]/70">
+                    {row.items_found}/{itemCount} items
+                  </span>
+                )}
+              </div>
+
+              <div className="flex-grow h-6 bg-white/5 rounded-full relative overflow-hidden">
+                {/* State average reference line */}
+                {averageTotal && (
+                  <div
+                    className="absolute top-0 h-full w-0.5 border-l-2 border-dashed border-[#facc15]/50 z-10"
+                    style={{ left: `${(averageTotal / scaleMax) * 100}%` }}
+                  />
+                )}
+                <div
+                  className={`bar-grow absolute h-full rounded-full transition-all duration-1000 ${isBest
+                      ? 'bg-[#22c55e] shadow-[0_0_12px_rgba(34,197,94,0.4)]'
+                      : 'bg-white/15'
+                    }`}
+                  style={{ width: `${barWidth}%`, animationDelay: `${idx * 0.1}s` }}
+                />
+              </div>
+
+              <div
+                className={`w-20 font-mono text-right ${isBest ? 'text-sm font-extrabold text-[#22c55e]' : 'text-xs font-bold text-[#bccbb9]'}`}
+              >
+                RM {row.total.toFixed(2)}
+              </div>
+            </div>
+          )
+        })}
+
+        {/* State average row */}
+        {averageTotal && (
+          <div className="flex items-center gap-4 opacity-60">
+            <div className="w-28 text-right text-[10px] font-semibold text-[#facc15] uppercase tracking-wide">
+              State Avg
+            </div>
+            <div className="flex-grow h-6 bg-white/5 rounded-full relative overflow-hidden">
+              <div
+                className="absolute h-full rounded-full border-2 border-dashed border-[#facc15]/60 bg-transparent"
+                style={{ width: `${(averageTotal / scaleMax) * 100}%` }}
+              />
+            </div>
+            <div className="w-20 text-xs font-bold font-mono text-right text-[#facc15]">
+              RM {averageTotal.toFixed(2)}
+            </div>
+          </div>
+        )}
+
+        {savings !== null && savings > 0 && (
+          <p className="text-xs text-[#22c55e]/70 mt-1">
+            💡 {storeRanking[0].premise} saves RM {savings.toFixed(2)} vs state average
+          </p>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ── Root component ───────────────────────────────────────────────────────────
+
+export function StateChart({
+  stateRanking,
+  storeRanking = [],
+  selectedState = '',
+  averageTotal,
+}: StateChartProps) {
+  const hasStateFilter = selectedState.trim().length > 0
+
+  if (hasStateFilter) {
+    const itemCount =
+      storeRanking.length > 0
+        ? Math.max(...storeRanking.map((r) => r.items_found))
+        : 0
+
+    return (
+      <StoreMode
+        storeRanking={storeRanking}
+        selectedState={selectedState}
+        itemCount={itemCount}
+        averageTotal={averageTotal}
+      />
+    )
+  }
+
+  if (!stateRanking || stateRanking.length === 0) return null
+
+  return <StateMode stateRanking={stateRanking} />
 }

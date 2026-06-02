@@ -21,9 +21,24 @@ export interface BasketItemResult {
   cheapest: PremisePrice | null
 }
 
+export interface StateRanking {
+  state: string
+  total: number
+  items_found: number
+}
+
+export interface StoreRanking {
+  premise_code: number
+  premise: string
+  total: number
+  items_found: number
+}
+
 export interface BasketResult {
   matches: ItemMatch[]
   items: BasketItemResult[]
+  state_ranking: StateRanking[]
+  store_ranking: StoreRanking[]
   total: number
   savings: number
   unresolved: string[]

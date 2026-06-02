@@ -1,5 +1,5 @@
 import sqlite3
-from src.models import PremisePrice, ItemMatch, BasketItemResult, BasketResult, StateRanking
+from src.models import PremisePrice, ItemMatch, BasketItemResult, BasketResult, StateRanking, StoreRanking
 
 
 def _placeholders(n: int) -> str:
@@ -100,14 +100,57 @@ def state_ranking(item_codes: list[int], db_path: str) -> list[StateRanking]:
     return result
 
 
-def _expensive_total(item_codes: list[int], db_path: str, state: str | None = None) -> float:
+def top_stores_in_state(
+    item_codes: list[int], db_path: str, state: str, limit: int = 5
+) -> list[StoreRanking]:
+            SELECT pr.premise_code, pr.premise, SUM(p.price) AS total, COUNT(DISTINCT p.item_code) AS items_found
+            FROM prices p
+            JOIN premises pr ON p.premise_code = pr.premise_code
+            WHERE p.item_code IN ({_placeholders(len(item_codes))})
+            AND pr.state = ?
+            GROUP BY pr.premise_code, pr.premise
+            HAVING COUNT(DISTINCT p.item_code) = ?
+            ORDER BY total ASC
+            LIMIT ?
+            """,
+            (*item_codes, state, len(item_codes), limit),
+        ).fetchall()
+
+        # Fallback: stores with partial stock
+        if not rows:
+            rows = conn.execute(
+                f"""
+                SELECT pr.premise_code, pr.premise, SUM(p.price) AS total, COUNT(DISTINCT p.item_code) AS items_found
+                FROM prices p
+                JOIN premises pr ON p.premise_code = pr.premise_code
+                WHERE p.item_code IN ({_placeholders(len(item_codes))})
+                AND pr.state = ?
+                GROUP BY pr.premise_code, pr.premise
+                ORDER BY items_found DESC, total ASC
+                LIMIT ?
+                """,
+                (*item_codes, state, limit),
+            ).fetchall()
+
+    return [
+        StoreRanking(
+            premise_code=row[0],
+            premise=row[1],
+            total=round(row[2], 2),
+            items_found=row[3],
+        )
+        for row in rows
+    ]
+
+
+def _average_total(item_codes: list[int], db_path: str, state: str | None = None) -> float:
     with sqlite3.connect(db_path) as conn:
         if state:
             row = conn.execute(
                 f"""
-                SELECT SUM(max_price)
+                SELECT SUM(avg_price)
                 FROM (
-                    SELECT MAX(p.price) AS max_price
+                    SELECT AVG(p.price) AS avg_price
                     FROM prices p
                     JOIN premises pr ON p.premise_code = pr.premise_code
                     WHERE p.item_code IN ({_placeholders(len(item_codes))})
@@ -120,9 +163,9 @@ def _expensive_total(item_codes: list[int], db_path: str, state: str | None = No
         else:
             row = conn.execute(
                 f"""
-                SELECT SUM(max_price)
+                SELECT SUM(avg_price)
                 FROM (
-                    SELECT MAX(price) AS max_price
+                    SELECT AVG(price) AS avg_price
                     FROM prices
                     WHERE item_code IN ({_placeholders(len(item_codes))})
                     GROUP BY item_code
@@ -166,9 +209,10 @@ def optimize(matches: list[ItemMatch], db_path: str, state: str | None = None) -
     try:
         cheapest_store = find_cheapest_store(item_codes, db_path, state=state)
         cheapest_total = sum(item.cheapest.price for item in items if item.cheapest)
-        priciest_total = _expensive_total(item_codes, db_path, state=state)
-        savings = round(priciest_total - cheapest_total, 2)
+        average_total = _average_total(item_codes, db_path, state=state)
+        savings = round(average_total - cheapest_total, 2)
         ranking = state_ranking(item_codes, db_path)
+        store_rank = top_stores_in_state(item_codes, db_path, state) if state else []
     except sqlite3.Error as e:
         return BasketResult(
             matches=matches,
@@ -181,6 +225,7 @@ def optimize(matches: list[ItemMatch], db_path: str, state: str | None = None) -
         matches=matches,
         items=items,
         state_ranking=ranking,
+        store_ranking=store_rank,
         total=round(cheapest_store[1], 2) if cheapest_store else round(cheapest_total, 2),
         savings=savings,
         unresolved=unresolved,

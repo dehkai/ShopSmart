@@ -243,7 +243,7 @@ export default function Home() {
                   )}
                 </AnimatePresence>
 
-                <ResultsSection result={result} onReset={reset} />
+                <ResultsSection result={result} onReset={reset} selectedState={selectedState} />
               </div>
 
             </motion.div>

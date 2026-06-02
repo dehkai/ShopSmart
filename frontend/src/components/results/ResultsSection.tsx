@@ -11,6 +11,7 @@ import { ItemPriceList } from './ItemPriceList'
 interface ResultsSectionProps {
   result: BasketResult
   onReset: () => void
+  selectedState?: string
   className?: string
 }
 
@@ -29,6 +30,7 @@ const containerVariants = {
 export function ResultsSection({
   result,
   onReset,
+  selectedState = '',
   className = '',
 }: ResultsSectionProps) {
   const matchedItems = result.matches.filter((m) => m.resolved)
@@ -45,11 +47,11 @@ export function ResultsSection({
       initial="hidden"
       animate="show"
     >
-      
+
       {/* ── Page Header Section ────────────────────────────────────────────── */}
       {/* ── Page Header Section ────────────────────────────────────────────── */}
-      <motion.header 
-        variants={childVariants} 
+      <motion.header
+        variants={childVariants}
         className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 select-none"
       >
         <div className="space-y-2">
@@ -79,16 +81,22 @@ export function ResultsSection({
           unresolvedCount={result.unresolved.length}
           cheapestPremise={cheapestPremise}
           items={result.items}
+          selectedState={selectedState}
         />
       </motion.div>
 
-      <motion.div 
+      <motion.div
         variants={childVariants}
         className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start"
       >
         {/* Left: Progress Chart (60% width) */}
         <div className="lg:col-span-8 h-full">
-          <StateChart items={result.items} total={result.total} />
+          <StateChart
+            stateRanking={result.state_ranking ?? []}
+            storeRanking={result.store_ranking ?? []}
+            selectedState={selectedState}
+            averageTotal={result.total + result.savings}
+          />
         </div>
 
         <div className="lg:col-span-4 h-full">

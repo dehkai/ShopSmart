@@ -67,7 +67,9 @@ function generateMockResult(queries: string[], selectedState: string): BasketRes
     items,
     total,
     savings: total * 0.26,
-    unresolved
+    unresolved,
+    state_ranking: [],
+    store_ranking: [],
   }
 }
 

@@ -10,6 +10,7 @@ interface SummaryStatsProps {
   unresolvedCount: number
   cheapestPremise: string | null
   items: BasketItemResult[]
+  selectedState?: string
 }
 
 /** Most frequent state across cheapest prices */
@@ -31,6 +32,7 @@ export function SummaryStats({
   unresolvedCount,
   cheapestPremise,
   items,
+  selectedState = '',
 }: SummaryStatsProps) {
   const totalItems = matchedCount + unresolvedCount
   const topState = deriveTopState(items)
@@ -65,7 +67,7 @@ export function SummaryStats({
           {savings > 0 && <TrendingUp size={20} className="text-[#22c55e]" />}
         </div>
         <div className="text-xs text-[#bccbb9]/60">
-          vs most expensive region
+          {selectedState ? `vs avg in ${selectedState}` : 'vs regional average'}
         </div>
       </div>
 
@@ -101,7 +103,7 @@ export function SummaryStats({
           {cheapestPremise ?? '—'}
         </div>
         <div className="text-xs text-[#bccbb9]/60">
-          {topState ? `${topState} Region` : 'Malaysia'}
+          {topState ? `${topState}` : 'Malaysia'}
         </div>
       </div>
 

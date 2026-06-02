@@ -28,10 +28,18 @@ class StateRanking(BaseModel):
     items_found: int
 
 
+class StoreRanking(BaseModel):
+    premise_code: int
+    premise: str
+    total: float
+    items_found: int
+
+
 class BasketResult(BaseModel):
     matches: list[ItemMatch]
     items: list[BasketItemResult]
     state_ranking: list[StateRanking] = Field(default_factory=list)
+    store_ranking: list[StoreRanking] = Field(default_factory=list)
     total: float = 0.0
     savings: float = 0.0
     unresolved: list[str] = Field(default_factory=list)
