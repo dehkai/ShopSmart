@@ -9,6 +9,7 @@ interface BasketInputProps {
   onChange: (val: string) => void
   onSubmit: () => void
   loading: boolean
+  error?: string | null
 }
 
 const PLACEHOLDER = `2kg Red Onions
@@ -21,6 +22,7 @@ export function BasketInput({
   onChange,
   onSubmit,
   loading,
+  error,
 }: BasketInputProps) {
   const [shortcutText, setShortcutText] = useState('Ctrl + Enter')
 
@@ -70,6 +72,13 @@ export function BasketInput({
         spellCheck={false}
         aria-label="Enter grocery items, one per line"
       />
+
+      {error && (
+        <p role="alert" className="text-xs text-[#ffb4ab] flex items-center gap-1.5">
+          <span aria-hidden>⚠</span>
+          {error}
+        </p>
+      )}
 
       <Button
         variant="primary"

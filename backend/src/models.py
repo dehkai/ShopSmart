@@ -14,12 +14,14 @@ class PremisePrice(BaseModel):
     premise: str
     state: str
     price: float
+    address: str | None = None
 
 
 class BasketItemResult(BaseModel):
     item_code: int
     item_name: str
     cheapest: PremisePrice | None = None
+    store_price: float | None = None
 
 
 class StateRanking(BaseModel):
@@ -28,11 +30,22 @@ class StateRanking(BaseModel):
     items_found: int
 
 
+class StoreRanking(BaseModel):
+    premise_code: int
+    premise: str
+    state: str | None = None
+    total: float
+    items_found: int
+    address: str | None = None
+
+
 class BasketResult(BaseModel):
     matches: list[ItemMatch]
     items: list[BasketItemResult]
     state_ranking: list[StateRanking] = Field(default_factory=list)
+    store_ranking: list[StoreRanking] = Field(default_factory=list)
     total: float = 0.0
     savings: float = 0.0
+    is_single_store: bool = True
     unresolved: list[str] = Field(default_factory=list)
     error: str | None = None

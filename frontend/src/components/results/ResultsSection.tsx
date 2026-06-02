@@ -11,6 +11,8 @@ import { ItemPriceList } from './ItemPriceList'
 interface ResultsSectionProps {
   result: BasketResult
   onReset: () => void
+  selectedState?: string
+  submittedCount?: number
   className?: string
 }
 
@@ -29,13 +31,27 @@ const containerVariants = {
 export function ResultsSection({
   result,
   onReset,
+  selectedState = '',
+  submittedCount,
   className = '',
 }: ResultsSectionProps) {
   const matchedItems = result.matches.filter((m) => m.resolved)
+  // Prefer store_ranking[0] (cheapest single store for whole basket) over per-item cheapest
   const cheapestPremise =
-    result.items.find((i) => i.cheapest)?.cheapest?.premise ?? null
+    result.store_ranking?.[0]?.premise ??
+    result.items.find((i) => i.cheapest)?.cheapest?.premise ??
+    null
 
-  const totalItems = matchedItems.length + result.unresolved.length
+  const cheapestPremiseState =
+    result.store_ranking?.[0]?.state ?? null
+
+  const cheapestPremiseAddress =
+    result.store_ranking?.[0]?.address ??
+    result.items.find((i) => i.cheapest)?.cheapest?.address ??
+    null
+
+  // Use original submitted count as denominator; fall back to LLM output count
+  const totalItems = submittedCount ?? (matchedItems.length + result.unresolved.length)
 
   return (
     <motion.section
@@ -45,11 +61,11 @@ export function ResultsSection({
       initial="hidden"
       animate="show"
     >
-      
+
       {/* ── Page Header Section ────────────────────────────────────────────── */}
       {/* ── Page Header Section ────────────────────────────────────────────── */}
-      <motion.header 
-        variants={childVariants} 
+      <motion.header
+        variants={childVariants}
         className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 select-none"
       >
         <div className="space-y-2">
@@ -57,7 +73,7 @@ export function ResultsSection({
             Price Optimization
           </h1>
           <p className="text-[#bccbb9] text-sm">
-            Based on your basket of {totalItems} item{totalItems !== 1 ? 's' : ''} across Malaysia's retailers.
+            Based on your basket of {totalItems} item{totalItems !== 1 ? 's' : ''} across Malaysia&apos;s retailers.
           </p>
         </div>
 
@@ -76,19 +92,31 @@ export function ResultsSection({
           total={result.total}
           savings={result.savings}
           matchedCount={matchedItems.length}
+          totalCount={totalItems}
           unresolvedCount={result.unresolved.length}
           cheapestPremise={cheapestPremise}
+          cheapestPremiseState={cheapestPremiseState}
+          cheapestPremiseAddress={cheapestPremiseAddress}
           items={result.items}
+          selectedState={selectedState}
+          isSingleStore={result.is_single_store}
+          bestStoreItemsCovered={result.store_ranking?.[0]?.items_found}
         />
       </motion.div>
 
-      <motion.div 
+      <motion.div
         variants={childVariants}
         className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start"
       >
         {/* Left: Progress Chart (60% width) */}
         <div className="lg:col-span-8 h-full">
-          <StateChart items={result.items} total={result.total} />
+          <StateChart
+            stateRanking={result.state_ranking ?? []}
+            storeRanking={result.store_ranking ?? []}
+            selectedState={selectedState}
+            averageTotal={result.total + result.savings}
+            totalItemCount={totalItems}
+          />
         </div>
 
         <div className="lg:col-span-4 h-full">
@@ -101,7 +129,7 @@ export function ResultsSection({
 
       {result.items.length > 0 && (
         <motion.div variants={childVariants} className="space-y-6">
-          <ItemPriceList items={result.items} />
+          <ItemPriceList items={result.items} recommendedStore={cheapestPremise ?? undefined} selectedState={selectedState} />
         </motion.div>
       )}
 
