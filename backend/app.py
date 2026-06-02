@@ -1,4 +1,4 @@
-from fastapi import FastAPI, status, HTTPException
+from fastapi import FastAPI, status, HTTPException, Query
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from pathlib import Path
@@ -40,4 +40,33 @@ def handle_basket(payload: Basket):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred while processing your basket: {str(e)}"
+        )
+
+# GET /items endpoint
+@app.get("/items")
+def search_items(q: str = Query(None, description="Search query to filter items by name")):
+    
+    # simple search endpoint that lets frontend to lookup item names
+    try:
+        # fetch raw items from db
+        db_items_context = fetch_db_items(DB_FILE)
+
+        # return full list if no query provided
+        if not q:
+            return [{"item_code": item[0], "item_name": item[1]} for item in db_items_context]
+        
+        # filter items by name
+        search_term = q.lower().strip()
+        filtered_items = [
+            {"item_code": item[0], "item_name": item[1]}
+            for item in db_items_context
+            if search_term in item[1].lower()
+        ]
+
+        return filtered_items
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Database search failed: {str(e)}"
         )
