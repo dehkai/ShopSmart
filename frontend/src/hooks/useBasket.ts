@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { submitBasket } from '@/lib/api'
 import type { BasketResult, ApiError, ItemMatch, BasketItemResult } from '@/lib/types'
 
-const USE_MOCK = true
+const USE_MOCK = false
 
 const MOCK_STORES = [
   { premise: "Mydin Chow Kit", state: "W.P. Kuala Lumpur" },

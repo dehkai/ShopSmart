@@ -823,7 +823,7 @@ requires-dist = [
     { name = "fastapi", specifier = "==0.136.1" },
     { name = "fastparquet", specifier = "==2024.11.0" },
     { name = "google-genai", specifier = "==2.3.0" },
-    { name = "groq", specifier = ">=1.4.0" },
+    { name = "groq", specifier = "==1.4.0" },
     { name = "ollama", specifier = "==0.6.2" },
     { name = "pandas", specifier = "==3.0.3" },
     { name = "pydantic", specifier = "==2.12.4" },

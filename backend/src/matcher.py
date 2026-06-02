@@ -98,7 +98,12 @@ def fetch_db_items(db_path: Path) -> List[Tuple[int, str, str]]:
 
 # --- layer 2 : LLM function that sends the grocery lines to gemini
 # with a list of items from the db & asks it to return json matches ---
-def llm_match(query_text: str, db_context: List[Tuple[int, str, str]]) -> str:
+def llm_match(
+    query_text: str,
+    db_context: List[Tuple[int, str, str]],
+    model: str | None = None,
+    api_key: str | None = None,
+) -> str:
 
     # format the structured tuple list into a clean, text-based catalog for the LLM
     catelog_lines = []
@@ -112,14 +117,24 @@ def llm_match(query_text: str, db_context: List[Tuple[int, str, str]]) -> str:
     formatted_db_context = "\n".join(catelog_lines)
 
     matcher_prompt = f"""
-        You are an expert data normalization agent mapping messy grocery items to an official database catalog.
+        You are an expert data normalization agent mapping messy grocery items to an official Malaysian database catalog.
+
+        ### IMPORTANT LANGUAGE RULES:
+        - User input may be in English, Malay, or a mix of both.
+        - The database catalog is in Malay (Bahasa Malaysia).
+        - You MUST translate English item names to their Malay equivalents before matching.
+        - Common translations: onion=bawang, rice=beras, egg=telur, chicken=ayam, milk=susu,
+          flour=tepung, sugar=gula, oil=minyak, fish=ikan, beef=daging lembu, pork=babi,
+          salt=garam, bread=roti, butter=mentega, potato=kentang, carrot=lobak merah,
+          tomato=tomato, garlic=bawang putih, chili=cili, prawn=udang, crab=ketam.
+        - Also handle typos and partial words (e.g. "bwang" -> "bawang").
 
         ### TASKS:
         1. Parse the following messy user input string: "{query_text}"
-        2. For each identified grocery item in the input, find the absolute best semantic match from the provided Official Database Catalog. Take both the Item Name and its corresponding Unit into consideration.
-        3. You must select exactly ONE best matching item_code from the catalog per input item. Do not return multiple brands or options for a single item.
-        4. If an item matches reasonably well, populate the item_code and item_name from the catalog, calculate a confidence score (0.0 to 1.0), and set resolved to true.
-        5. If no logical match exists in the catalog, set item_code and item_name to null, and resolved to false.
+        2. For each identified grocery item, translate to Malay if needed, then find the absolute best semantic match from the Official Database Catalog. Consider both Item Name and Unit.
+        3. Select exactly ONE best matching item_code per input item. Do not return multiple brands.
+        4. If an item matches reasonably well, populate item_code and item_name from the catalog, set confidence (0.0-1.0), and set resolved to true.
+        5. If no logical match exists, set item_code and item_name to null and resolved to false.
 
         ### OFFICIAL DATABASE CATALOG:
         {formatted_db_context}
@@ -129,18 +144,22 @@ def llm_match(query_text: str, db_context: List[Tuple[int, str, str]]) -> str:
         {json.dumps(MatcherResponse.model_json_schema(), indent=2)}
     """
 
-    response = prompt_model("gemini-2.5-flash-lite", matcher_prompt)
+    resolved_model = model or "gemini-2.5-flash-lite"
+    response = prompt_model(resolved_model, matcher_prompt, api_key=api_key)
     return response
 
 
 # --- layer 3: tries LLM first, validate results, then falls back to fuzzy matching if needed ---
 def match_items(
-    query_text: str, db_items: List[Tuple[int, str, str]]
+    query_text: str,
+    db_items: List[Tuple[int, str, str]],
+    model: str | None = None,
+    api_key: str | None = None,
 ) -> MatcherResponse:
     print(f"Attempting item match via LLM for: '{query_text}'...")
 
     # get raw llm output and clean it
-    raw_llm_output = llm_match(query_text, db_items)
+    raw_llm_output = llm_match(query_text, db_items, model=model, api_key=api_key)
     llm_json_output = raw_llm_output.strip()
     llm_json_output = re.sub(r"^\s*```json", "", llm_json_output)
     llm_json_output = re.sub(r"\s*```$", "", llm_json_output)

@@ -48,7 +48,7 @@ def state_ranking(item_codes: list[int], db_path: str) -> list[StateRanking]:
     with sqlite3.connect(db_path) as conn:
         rows = conn.execute(
             f"""
-            SELECT pr.state, SUM(min_price) AS total, COUNT(*) AS items_found
+            SELECT t.state, SUM(t.min_price) AS total, COUNT(*) AS items_found
             FROM (
                 SELECT pr2.state, MIN(p.price) AS min_price
                 FROM prices p
@@ -56,8 +56,7 @@ def state_ranking(item_codes: list[int], db_path: str) -> list[StateRanking]:
                 WHERE p.item_code IN ({_placeholders(len(item_codes))})
                 GROUP BY pr2.state, p.item_code
             ) t
-            JOIN premises pr ON pr.state = t.state
-            GROUP BY pr.state
+            GROUP BY t.state
             ORDER BY total ASC
             """,
             item_codes,

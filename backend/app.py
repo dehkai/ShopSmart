@@ -11,6 +11,9 @@ app = FastAPI()
 
 class Basket(BaseModel):
     grocery_list: str
+    provider: str | None = None
+    model: str | None = None
+    api_key: str | None = None
 
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
@@ -31,11 +34,13 @@ def handle_basket(payload: Basket):
     try:
         db_items_context = fetch_db_items(DB_FILE)
         # calls the match_items(grocery_list: str, db_path: str) -> MatcherResponse
-        matcher_response = match_items(payload.grocery_list, db_items_context)
-
-        # passes the result to the optimize(matches: list[ItemMatch], db_path: str) -> BasketResult
+        matcher_response = match_items(
+            payload.grocery_list,
+            db_items_context,
+            model=payload.model,
+            api_key=payload.api_key,
+        )
         optimized_basket = optimize(matcher_response.matches, str(DB_FILE))
-
         return optimized_basket
 
     except Exception as e:
