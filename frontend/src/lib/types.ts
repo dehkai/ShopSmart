@@ -19,6 +19,7 @@ export interface BasketItemResult {
   item_code: number
   item_name: string
   cheapest: PremisePrice | null
+  store_price: number | null
 }
 
 export interface StateRanking {

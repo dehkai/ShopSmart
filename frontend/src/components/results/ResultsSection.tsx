@@ -118,7 +118,7 @@ export function ResultsSection({
 
       {result.items.length > 0 && (
         <motion.div variants={childVariants} className="space-y-6">
-          <ItemPriceList items={result.items} />
+          <ItemPriceList items={result.items} recommendedStore={cheapestPremise ?? undefined} />
         </motion.div>
       )}
 

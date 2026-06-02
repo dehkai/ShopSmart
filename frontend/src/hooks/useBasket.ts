@@ -56,7 +56,8 @@ function generateMockResult(queries: string[], selectedState: string): BasketRes
           premise: store.premise,
           state: selectedState || store.state,
           price: basePrice
-        }
+        },
+        store_price: basePrice
       })
       total += basePrice
     }

@@ -20,6 +20,7 @@ class BasketItemResult(BaseModel):
     item_code: int
     item_name: str
     cheapest: PremisePrice | None = None
+    store_price: float | None = None
 
 
 class StateRanking(BaseModel):
