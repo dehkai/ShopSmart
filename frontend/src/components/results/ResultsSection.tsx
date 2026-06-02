@@ -12,6 +12,7 @@ interface ResultsSectionProps {
   result: BasketResult
   onReset: () => void
   selectedState?: string
+  submittedCount?: number
   className?: string
 }
 
@@ -31,13 +32,18 @@ export function ResultsSection({
   result,
   onReset,
   selectedState = '',
+  submittedCount,
   className = '',
 }: ResultsSectionProps) {
   const matchedItems = result.matches.filter((m) => m.resolved)
+  // Prefer store_ranking[0] (cheapest single store for whole basket) over per-item cheapest
   const cheapestPremise =
-    result.items.find((i) => i.cheapest)?.cheapest?.premise ?? null
+    result.store_ranking?.[0]?.premise ??
+    result.items.find((i) => i.cheapest)?.cheapest?.premise ??
+    null
 
-  const totalItems = matchedItems.length + result.unresolved.length
+  // Use original submitted count as denominator; fall back to LLM output count
+  const totalItems = submittedCount ?? (matchedItems.length + result.unresolved.length)
 
   return (
     <motion.section
@@ -59,7 +65,7 @@ export function ResultsSection({
             Price Optimization
           </h1>
           <p className="text-[#bccbb9] text-sm">
-            Based on your basket of {totalItems} item{totalItems !== 1 ? 's' : ''} across Malaysia's retailers.
+            Based on your basket of {totalItems} item{totalItems !== 1 ? 's' : ''} across Malaysia&apos;s retailers.
           </p>
         </div>
 
@@ -78,10 +84,13 @@ export function ResultsSection({
           total={result.total}
           savings={result.savings}
           matchedCount={matchedItems.length}
+          totalCount={totalItems}
           unresolvedCount={result.unresolved.length}
           cheapestPremise={cheapestPremise}
           items={result.items}
           selectedState={selectedState}
+          isSingleStore={result.is_single_store}
+          bestStoreItemsCovered={result.store_ranking?.[0]?.items_found}
         />
       </motion.div>
 

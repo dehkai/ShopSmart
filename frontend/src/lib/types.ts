@@ -41,6 +41,7 @@ export interface BasketResult {
   store_ranking: StoreRanking[]
   total: number
   savings: number
+  is_single_store: boolean
   unresolved: string[]
 }
 

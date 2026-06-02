@@ -42,5 +42,6 @@ class BasketResult(BaseModel):
     store_ranking: list[StoreRanking] = Field(default_factory=list)
     total: float = 0.0
     savings: float = 0.0
+    is_single_store: bool = True
     unresolved: list[str] = Field(default_factory=list)
     error: str | None = None

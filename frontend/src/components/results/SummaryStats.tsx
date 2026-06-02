@@ -7,10 +7,13 @@ interface SummaryStatsProps {
   total: number
   savings: number
   matchedCount: number
+  totalCount: number
   unresolvedCount: number
   cheapestPremise: string | null
   items: BasketItemResult[]
   selectedState?: string
+  isSingleStore?: boolean
+  bestStoreItemsCovered?: number
 }
 
 /** Most frequent state across cheapest prices */
@@ -29,12 +32,17 @@ export function SummaryStats({
   total,
   savings,
   matchedCount,
+  totalCount,
   unresolvedCount,
   cheapestPremise,
   items,
   selectedState = '',
+  isSingleStore = true,
+  bestStoreItemsCovered,
 }: SummaryStatsProps) {
-  const totalItems = matchedCount + unresolvedCount
+  const totalItems = totalCount
+  // Clamp unresolved to submitted count — LLM may hallucinate extras beyond what user submitted
+  const displayUnresolved = Math.max(0, totalCount - matchedCount)
   const topState = deriveTopState(items)
 
   return (
@@ -42,18 +50,26 @@ export function SummaryStats({
       
       {/* ── Best Total Card ─────────────────────────────────────────────────── */}
       <div className="glass-card p-6 rounded-xl flex flex-col justify-between h-40">
-        <div className="text-[10px] font-bold uppercase tracking-widest text-[#bccbb9] flex justify-between items-center">
-          <span>Best Total</span>
-          <span className="text-[#22c55e] flex items-center">
-            <CheckCircle size={12} strokeWidth={2.5} />
-          </span>
+        <div className="text-[10px] font-bold uppercase tracking-widest text-[#bccbb9]">
+          Best Total
         </div>
-        <div className="font-mono text-3xl font-extrabold text-[#22c55e] my-auto">
+        <div className={`font-mono text-3xl font-extrabold my-auto ${isSingleStore ? 'text-[#22c55e]' : 'text-[#facc15]'}`}>
           RM {total.toFixed(2)}
         </div>
         <div className="text-xs text-[#bccbb9]/80 flex items-center gap-1">
-          <MapPin size={12} className="text-[#22c55e]" />
-          <span>{topState ?? 'Malaysia'}</span>
+          {isSingleStore ? (
+            <>
+              <MapPin size={12} className="text-[#22c55e]" />
+              <span>{topState ?? 'Malaysia'}</span>
+            </>
+          ) : (
+            <>
+              <AlertTriangle size={12} className="text-[#facc15]" />
+              <span className="text-[#facc15]/80">
+                {bestStoreItemsCovered != null ? `${bestStoreItemsCovered}/${matchedCount} items at one store` : 'Split across stores'}
+              </span>
+            </>
+          )}
         </div>
       </div>
 
@@ -79,16 +95,16 @@ export function SummaryStats({
         <div className="font-mono text-3xl font-extrabold text-[#dee1f7] my-auto">
           {matchedCount}/{totalItems}
         </div>
-        <div className={`text-xs flex items-center gap-1 ${unresolvedCount > 0 ? 'text-[#ffb5ab]' : 'text-[#22c55e]'}`}>
-          {unresolvedCount > 0 ? (
+        <div className={`text-xs flex items-center gap-1 ${displayUnresolved > 0 ? 'text-[#ffb5ab]' : 'text-[#22c55e]'}`}>
+          {displayUnresolved > 0 ? (
             <>
               <AlertTriangle size={12} />
-              <span>{unresolvedCount} unmatched item{unresolvedCount !== 1 ? 's' : ''}</span>
+              <span>{displayUnresolved} unmatched item{displayUnresolved !== 1 ? 's' : ''}</span>
             </>
           ) : (
             <>
               <CheckCircle size={12} />
-              <span>All resolved</span>
+              <span>All matched</span>
             </>
           )}
         </div>

@@ -70,6 +70,7 @@ function generateMockResult(queries: string[], selectedState: string): BasketRes
     unresolved,
     state_ranking: [],
     store_ranking: [],
+    is_single_store: true,
   }
 }
 
@@ -77,6 +78,7 @@ export function useBasket() {
   const [basketText, setBasketText] = useState<string>('')
   const [selectedState, setSelectedState] = useState<string>('')
   const [result, setResult] = useState<BasketResult | null>(null)
+  const [submittedCount, setSubmittedCount] = useState<number>(0)
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
   const [provider, setProvider] = useState<'gemini' | 'groq'>('gemini')
@@ -132,6 +134,7 @@ export function useBasket() {
 
     setLoading(true)
     setError(null)
+    setSubmittedCount(items.length)
 
     if (USE_MOCK) {
       await new Promise((resolve) => setTimeout(resolve, 800))
@@ -194,6 +197,7 @@ export function useBasket() {
     selectedState,
     setSelectedState,
     result,
+    submittedCount,
     loading,
     error,
     handleSubmit,

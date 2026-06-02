@@ -17,6 +17,7 @@ export default function Home() {
     selectedState,
     setSelectedState,
     result,
+    submittedCount,
     loading,
     error,
     handleSubmit,
@@ -243,7 +244,7 @@ export default function Home() {
                   )}
                 </AnimatePresence>
 
-                <ResultsSection result={result} onReset={reset} selectedState={selectedState} />
+                <ResultsSection result={result} onReset={reset} selectedState={selectedState} submittedCount={submittedCount} />
               </div>
 
             </motion.div>
