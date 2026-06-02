@@ -8,6 +8,7 @@ interface StateChartProps {
   selectedState?: string
   /** avg(all stores in state) – used as reference line in store mode */
   averageTotal?: number
+  totalItemCount?: number
 }
 
 // ── State mode (no state selected) ──────────────────────────────────────────
@@ -23,7 +24,7 @@ function StateMode({ stateRanking }: { stateRanking: StateRanking[] }) {
           <h3 className="text-sm font-semibold uppercase tracking-widest text-[#bccbb9] mb-1">
             Total Basket Cost by State
           </h3>
-          <p className="text-xs text-[#bccbb9]/60">Across top 5 cheapest states</p>
+          <p className="text-xs text-[#bccbb9]/60">Cheapest single store per state, top 5</p>
         </div>
         <div className="flex gap-2 items-center">
           <span className="w-3 h-3 rounded-full bg-[#22c55e] shadow-[0_0_8px_rgba(75,226,119,0.5)]"></span>
@@ -187,14 +188,16 @@ export function StateChart({
   storeRanking = [],
   selectedState = '',
   averageTotal,
+  totalItemCount,
 }: StateChartProps) {
   const hasStateFilter = selectedState.trim().length > 0
 
   if (hasStateFilter) {
-    const itemCount =
+    const itemCount = totalItemCount ?? (
       storeRanking.length > 0
         ? Math.max(...storeRanking.map((r) => r.items_found))
         : 0
+    )
 
     return (
       <StoreMode
