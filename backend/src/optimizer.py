@@ -111,6 +111,26 @@ def state_ranking(item_codes: list[int], db_path: str) -> list[StateRanking]:
             (len(item_codes), *item_codes, len(item_codes)),
         ).fetchall()
 
+        # Fallback: no state has a single store covering all items — rank by most items found
+        if not rows:
+            rows = conn.execute(
+                f"""
+                SELECT pr.state, MIN(store_total) AS total, MAX(items_found) AS items_found
+                FROM (
+                    SELECT pr.state, p.premise_code, SUM(p.price) AS store_total,
+                           COUNT(DISTINCT p.item_code) AS items_found
+                    FROM prices p
+                    JOIN premises pr ON p.premise_code = pr.premise_code
+                    WHERE p.item_code IN ({_placeholders(len(item_codes))})
+                    GROUP BY pr.state, p.premise_code
+                ) t
+                JOIN premises pr ON t.premise_code = pr.premise_code
+                GROUP BY pr.state
+                ORDER BY items_found DESC, total ASC
+                """,
+                (*item_codes,),
+            ).fetchall()
+
     seen: set[str] = set()
     result = []
     for row in rows:
@@ -280,6 +300,7 @@ def optimize(matches: list[ItemMatch], db_path: str, state: str | None = None) -
             item.store_price = get_item_price_at_store(item.item_code, best_premise_code, db_path)
 
     savings = round(average_total - best_total, 2)
+    national_avg = round(_average_total(item_codes, db_path, state=None), 2)
 
     return BasketResult(
         matches=matches,
@@ -288,6 +309,7 @@ def optimize(matches: list[ItemMatch], db_path: str, state: str | None = None) -
         store_ranking=store_rank,
         total=best_total,
         savings=savings,
+        national_average=national_avg,
         is_single_store=is_single_store,
         unresolved=unresolved,
     )

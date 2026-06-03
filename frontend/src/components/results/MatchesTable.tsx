@@ -32,6 +32,9 @@ function getConfidenceBadge(confidence: number) {
 }
 
 export function MatchesTable({ matches, unresolved }: MatchesTableProps) {
+  // All items already shown in matches section (avoid duplicates in unresolved section)
+  const matchedQueries = new Set(matches.map((m) => m.query))
+
   return (
     <div className="glass-card p-6 rounded-xl flex flex-col">
       <div className="mb-6">
@@ -44,35 +47,50 @@ export function MatchesTable({ matches, unresolved }: MatchesTableProps) {
       </div>
 
       <div className="flex flex-col gap-4 max-h-[360px] overflow-y-auto pr-1 no-scrollbar">
-        {/* Matched / Resolved Items */}
+        {/* All Items — resolved and unresolved */}
         {matches.map((match, idx) => (
           <div
             key={`match-${idx}`}
             className="flex justify-between items-center p-3 border-b border-white/5 last:border-0"
           >
             <div className="min-w-0 flex-1 pr-4">
-              <div className="text-xs font-bold text-[#dee1f7] truncate" title={match.query}>
+              <div className="text-xs font-bold truncate text-[#dee1f7]" title={match.query}>
                 {match.query}
               </div>
               <div className="text-[11px] text-[#bccbb9]/60 truncate mt-0.5" title={match.item_name ?? ''}>
-                Matched: {match.item_name ?? 'Searching...'}
+                {match.item_name ? `Matched: ${match.item_name}` : 'No match found'}
               </div>
+              {!match.resolved && match.item_name && (
+                <div className="text-[11px] text-amber-400/80 flex items-center gap-1 mt-0.5">
+                  <AlertTriangle size={10} />
+                  <span>No price data found</span>
+                </div>
+              )}
             </div>
-            
+
             <div className="shrink-0 flex items-center gap-2">
+              {match.resolved && match.match_type === 'fuzzy' && (
+                <span className="px-3 py-1 bg-white/5 border border-white/10 text-[#bccbb9]/50 text-[10px] font-bold rounded-full uppercase tracking-wider">
+                  Text
+                </span>
+              )}
               {match.resolved ? (
                 getConfidenceBadge(match.confidence)
+              ) : match.item_name ? (
+                <span className="px-3 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-bold rounded-full uppercase tracking-wider">
+                  No Price
+                </span>
               ) : (
-                <span className="px-3 py-1 bg-white/5 border border-white/10 text-[#bccbb9]/50 text-[10px] font-bold rounded-full uppercase tracking-wider">
-                  Pending
+                <span className="px-3 py-1 bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] font-bold rounded-full uppercase tracking-wider">
+                  Unmatched
                 </span>
               )}
             </div>
           </div>
         ))}
 
-        {/* Unresolved / Not Found Items */}
-        {unresolved.map((q, idx) => (
+        {/* Unresolved items not already shown in matches (edge cases) */}
+        {unresolved.filter((q) => !matchedQueries.has(q)).map((q, idx) => (
           <div
             key={`unresolved-${idx}`}
             className="flex justify-between items-center p-3 border-2 border-dashed border-white/10 rounded-xl bg-white/[0.02]"

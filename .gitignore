@@ -2,7 +2,6 @@
 __pycache__/
 *.pyc
 .env
-*.db
 data/raw/*.parquet
 .pytest_cache/
 .ruff_cache/

@@ -8,14 +8,19 @@ interface StateChartProps {
   selectedState?: string
   /** avg(all stores in state) – used as reference line in store mode */
   averageTotal?: number
+  /** avg basket price across all stores nationally */
+  nationalAverage?: number
   totalItemCount?: number
 }
 
 // ── State mode (no state selected) ──────────────────────────────────────────
 
-function StateMode({ stateRanking }: { stateRanking: StateRanking[] }) {
+function StateMode({ stateRanking, nationalAverage }: { stateRanking: StateRanking[], nationalAverage?: number }) {
   const top5 = stateRanking.slice(0, 5)
-  const maxPrice = Math.max(...top5.map((r) => r.total))
+  const scaleMax = Math.max(
+    ...top5.map((r) => r.total),
+    nationalAverage ?? 0,
+  )
 
   return (
     <div className="glass-card p-8 rounded-xl flex flex-col">
@@ -26,16 +31,12 @@ function StateMode({ stateRanking }: { stateRanking: StateRanking[] }) {
           </h3>
           <p className="text-xs text-[#bccbb9]/60">Cheapest single store per state, top 5</p>
         </div>
-        <div className="flex gap-2 items-center">
-          <span className="w-3 h-3 rounded-full bg-[#22c55e] shadow-[0_0_8px_rgba(75,226,119,0.5)]"></span>
-          <span className="text-[10px] text-[#bccbb9]/60 uppercase tracking-wide">cheapest</span>
-        </div>
       </div>
 
       <div className="flex-grow flex flex-col gap-6">
         {top5.map((row, idx) => {
           const isCheapest = idx === 0
-          const barWidth = Math.max(10, (row.total / maxPrice) * 100)
+          const barWidth = Math.max(10, (row.total / scaleMax) * 100)
 
           return (
             <div key={row.state} className="flex items-center gap-4">
@@ -43,6 +44,12 @@ function StateMode({ stateRanking }: { stateRanking: StateRanking[] }) {
                 {row.state}
               </div>
               <div className="flex-grow h-6 bg-white/5 rounded-full relative overflow-hidden">
+                {nationalAverage && nationalAverage > 0 && (
+                  <div
+                    className="absolute top-0 h-full w-0.5 border-l-2 border-dashed border-[#facc15]/50 z-10"
+                    style={{ left: `${(nationalAverage / scaleMax) * 100}%` }}
+                  />
+                )}
                 <div
                   className={`bar-grow absolute h-full rounded-full transition-all duration-1000 ${isCheapest
                       ? 'bg-[#22c55e] shadow-[0_0_12px_rgba(34,197,94,0.4)]'
@@ -60,6 +67,23 @@ function StateMode({ stateRanking }: { stateRanking: StateRanking[] }) {
             </div>
           )
         })}
+
+        {nationalAverage && nationalAverage > 0 && (
+          <div className="flex items-center gap-4 opacity-60">
+            <div className="w-28 text-right text-[10px] font-semibold text-[#facc15] uppercase tracking-wide">
+              National Avg
+            </div>
+            <div className="flex-grow h-6 bg-white/5 rounded-full relative overflow-hidden">
+              <div
+                className="absolute h-full rounded-full border-2 border-dashed border-[#facc15]/60 bg-transparent"
+                style={{ width: `${(nationalAverage / scaleMax) * 100}%` }}
+              />
+            </div>
+            <div className="w-20 text-xs font-bold font-mono text-right text-[#facc15]">
+              RM {nationalAverage.toFixed(2)}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
@@ -188,6 +212,7 @@ export function StateChart({
   storeRanking = [],
   selectedState = '',
   averageTotal,
+  nationalAverage,
   totalItemCount,
 }: StateChartProps) {
   const hasStateFilter = selectedState.trim().length > 0
@@ -211,5 +236,5 @@ export function StateChart({
 
   if (!stateRanking || stateRanking.length === 0) return null
 
-  return <StateMode stateRanking={stateRanking} />
+  return <StateMode stateRanking={stateRanking} nationalAverage={nationalAverage} />
 }

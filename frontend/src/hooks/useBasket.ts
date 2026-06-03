@@ -29,6 +29,7 @@ function generateMockResult(queries: string[], selectedState: string): BasketRes
         item_code: null,
         item_name: null,
         confidence: 0.0,
+        match_type: 'llm',
         resolved: false
       })
       unresolved.push(q)
@@ -45,6 +46,7 @@ function generateMockResult(queries: string[], selectedState: string): BasketRes
         item_code: code,
         item_name: mockName,
         confidence: 0.82 + (idx % 3) * 0.08,
+        match_type: 'llm',
         resolved: true
       })
 
@@ -73,6 +75,7 @@ function generateMockResult(queries: string[], selectedState: string): BasketRes
     store_ranking: [],
     is_single_store: true,
     is_fuzzy_fallback: false,
+    national_average: total,
     error: null,
   }
 }

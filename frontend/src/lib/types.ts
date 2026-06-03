@@ -6,6 +6,7 @@ export interface ItemMatch {
   item_name: string | null
   confidence: number // 0.0–1.0
   resolved: boolean
+  match_type: 'llm' | 'fuzzy'
 }
 
 export interface PremisePrice {
@@ -45,6 +46,7 @@ export interface BasketResult {
   store_ranking: StoreRanking[]
   total: number
   savings: number
+  national_average: number
   is_single_store: boolean
   unresolved: string[]
   is_fuzzy_fallback: boolean
