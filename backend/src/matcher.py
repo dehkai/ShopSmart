@@ -2,7 +2,7 @@ import re
 import sys
 import json
 import sqlite3
-from typing import List, Tuple
+from typing import List, Tuple, Set
 from pathlib import Path
 
 from pydantic import BaseModel, ValidationError
@@ -103,6 +103,32 @@ def fetch_db_items(db_path: Path) -> List[Tuple[int, str, str]]:
 
     return rows
 
+# gets list of item codes with price records from prices table
+def fetch_db_prices(db_path: Path) -> Set[int]:
+
+    connection = None
+    try:
+        connection = sqlite3.connect(db_path)
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+                SELECT DISTINCT item_code 
+                FROM prices 
+                WHERE price IS NOT NULL AND price != 0 AND TRIM(CAST(price AS TEXT)) != ''
+            """
+        )
+        rows = cursor.fetchall()
+
+        # extract individual codes into a hash set for price record validation
+        return {row[0] for row in rows}
+        
+    except sqlite3.Error as e:
+        print(f"Database error while fetching price records: {e}")
+        return set()
+    finally:
+        if connection:
+            connection.close()
+
 
 # --- layer 2 : LLM function that sends the grocery lines to gemini
 # with a list of items from the db & asks it to return json matches ---
@@ -162,6 +188,7 @@ def llm_match(
 def match_items(
     query_text: str,
     db_items: List[Tuple[int, str, str]],
+    db_path: Path,
     model: str | None = None,
     api_key: str | None = None,
 ) -> MatcherResponse:
@@ -185,6 +212,7 @@ def match_items(
 
         # get valid item codes from db for verification
         valid_db_codes = {item[0] for item in db_items}
+        valid_price_codes = fetch_db_prices(db_path)
         final_matches: List[ItemMatch] = []
 
         try:
@@ -192,10 +220,11 @@ def match_items(
 
             for match in llm_response.matches:
                 is_valid_code = match.item_code in valid_db_codes
+                has_price_record = match.item_code in valid_price_codes
                 is_confident = match.confidence >= 0.7
 
                 # check for resolve, item_code exists in db, high confidence
-                if match.resolved and match.item_code and is_valid_code and is_confident:
+                if match.resolved and match.item_code and is_valid_code and has_price_record and is_confident:
                     final_matches.append(match)
                 else:
                     # fallback to fuzzy_match()
@@ -208,11 +237,13 @@ def match_items(
                             reason = "unresolved in catalog"
                         elif not is_valid_code:
                             reason = "returned invalid catalog code"
+                        elif not has_price_record:
+                            reason = "price record unavailable for this item"
                         else:
                             reason = f"low confidence ({match.confidence})"
                         error_msg = f"LLM matched item '{match.query}' failed validation: {reason}"
                     fallback_results = fuzzy_match(match.query, db_items)
-                    if fallback_results:
+                    if fallback_results and fallback_results[0].item_code in valid_price_codes:
                         final_matches.append(fallback_results[0])
 
         except (ValidationError, json.JSONDecodeError) as e:
@@ -222,7 +253,8 @@ def match_items(
             print(
                 f"LLM returned invalid structure: {e}. Executing full fuzzy match fallback..."
             )
-            final_matches = fuzzy_match(query_text, db_items)
+            fallback_results = fuzzy_match(query_text, db_items)
+            final_matches = [res for res in fallback_results if res.item_code in valid_price_codes]
 
     return MatcherResponse(matches=final_matches, is_fuzzy_fallback=is_fuzzy_fallback, error=error_msg)
 
