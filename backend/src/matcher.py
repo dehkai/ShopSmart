@@ -12,11 +12,19 @@ from src.models import ItemMatch
 from src.week_2.prompt_model import prompt_model
 
 
-class MatcherResponse(BaseModel):
+class MatcherLLMResponse(BaseModel):
     matches: List[ItemMatch]
 
 
+class MatcherResponse(BaseModel):
+    matches: List[ItemMatch]
+    is_fuzzy_fallback: bool = False
+    error: str | None = None
+
+
+
 # --- 3-LAYER ITEM MATCHING FROM MESSY TEXT INPUT ---
+
 
 
 def preprocess_text(text: str) -> str:
@@ -141,8 +149,9 @@ def llm_match(
 
         ### OUTPUT FORMAT:
         Return a JSON object matching this JSON Schema:
-        {json.dumps(MatcherResponse.model_json_schema(), indent=2)}
+        {json.dumps(MatcherLLMResponse.model_json_schema(), indent=2)}
     """
+
 
     resolved_model = model or "gemini-2.5-flash-lite"
     response = prompt_model(resolved_model, matcher_prompt, api_key=api_key)
@@ -161,40 +170,62 @@ def match_items(
     # get raw llm output and clean it
     raw_llm_output = llm_match(query_text, db_items, model=model, api_key=api_key)
     llm_json_output = raw_llm_output.strip()
-    llm_json_output = re.sub(r"^\s*```json", "", llm_json_output)
-    llm_json_output = re.sub(r"\s*```$", "", llm_json_output)
 
-    # get valid item codes from db for verification
-    valid_db_codes = {item[0] for item in db_items}
-    final_matches: List[ItemMatch] = []
+    is_fuzzy_fallback = False
+    error_msg = None
 
-    try:
-        llm_response = MatcherResponse.model_validate_json(llm_json_output)
-
-        for match in llm_response.matches:
-            is_valid_code = match.item_code in valid_db_codes
-            is_confident = match.confidence >= 0.7
-
-            # check for resolve, item_code exists in db, high confidence
-            if match.resolved and match.item_code and is_valid_code and is_confident:
-                final_matches.append(match)
-            else:
-                # fallback to fuzzy_match()
-                print(
-                    f"LLM item match failed validation for '{match.query}'. Falling back to fuzzy match..."
-                )
-                fallback_results = fuzzy_match(match.query, db_items)
-                if fallback_results:
-                    final_matches.append(fallback_results[0])
-
-    except (ValidationError, json.JSONDecodeError) as e:
-        # fallback to fuzzy_match()
-        print(
-            f"LLM returned invalid structure: {e}. Executing full fuzzy match fallback..."
-        )
+    if raw_llm_output.startswith(("[Error]", "[Gemini Error]", "[Ollama Error]")):
+        is_fuzzy_fallback = True
+        error_msg = raw_llm_output
+        print(f"LLM call failed with error: {error_msg}. Executing full fuzzy match fallback...")
         final_matches = fuzzy_match(query_text, db_items)
+    else:
+        llm_json_output = re.sub(r"^\s*```json", "", llm_json_output)
+        llm_json_output = re.sub(r"\s*```$", "", llm_json_output)
 
-    return MatcherResponse(matches=final_matches)
+        # get valid item codes from db for verification
+        valid_db_codes = {item[0] for item in db_items}
+        final_matches: List[ItemMatch] = []
+
+        try:
+            llm_response = MatcherLLMResponse.model_validate_json(llm_json_output)
+
+            for match in llm_response.matches:
+                is_valid_code = match.item_code in valid_db_codes
+                is_confident = match.confidence >= 0.7
+
+                # check for resolve, item_code exists in db, high confidence
+                if match.resolved and match.item_code and is_valid_code and is_confident:
+                    final_matches.append(match)
+                else:
+                    # fallback to fuzzy_match()
+                    print(
+                        f"LLM item match failed validation for '{match.query}'. Falling back to fuzzy match..."
+                    )
+                    is_fuzzy_fallback = True
+                    if not error_msg:
+                        if not match.resolved or not match.item_code:
+                            reason = "unresolved in catalog"
+                        elif not is_valid_code:
+                            reason = "returned invalid catalog code"
+                        else:
+                            reason = f"low confidence ({match.confidence})"
+                        error_msg = f"LLM matched item '{match.query}' failed validation: {reason}"
+                    fallback_results = fuzzy_match(match.query, db_items)
+                    if fallback_results:
+                        final_matches.append(fallback_results[0])
+
+        except (ValidationError, json.JSONDecodeError) as e:
+            # fallback to fuzzy_match()
+            is_fuzzy_fallback = True
+            error_msg = f"LLM returned invalid JSON structure: {e}"
+            print(
+                f"LLM returned invalid structure: {e}. Executing full fuzzy match fallback..."
+            )
+            final_matches = fuzzy_match(query_text, db_items)
+
+    return MatcherResponse(matches=final_matches, is_fuzzy_fallback=is_fuzzy_fallback, error=error_msg)
+
 
 
 def main():

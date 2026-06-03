@@ -47,7 +47,10 @@ export interface BasketResult {
   savings: number
   is_single_store: boolean
   unresolved: string[]
+  is_fuzzy_fallback: boolean
+  error?: string | null
 }
+
 
 export interface BasketRequest {
   items: string[]

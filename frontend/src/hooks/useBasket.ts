@@ -72,8 +72,11 @@ function generateMockResult(queries: string[], selectedState: string): BasketRes
     state_ranking: [],
     store_ranking: [],
     is_single_store: true,
+    is_fuzzy_fallback: false,
+    error: null,
   }
 }
+
 
 export function useBasket() {
   const [basketText, setBasketText] = useState<string>('')

@@ -1,8 +1,9 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Search } from 'lucide-react'
+import { Search, AlertTriangle } from 'lucide-react'
 import type { BasketResult } from '@/lib/types'
+
 import { SummaryStats } from './SummaryStats'
 import { StateChart } from './StateChart'
 import { MatchesTable } from './MatchesTable'
@@ -87,7 +88,37 @@ export function ResultsSection({
         </button>
       </motion.header>
 
+      {result.is_fuzzy_fallback && (
+        <motion.div
+          variants={childVariants}
+          className="relative overflow-hidden glass-card border border-amber-500/20 bg-amber-500/5 rounded-2xl p-5 md:p-6 flex flex-col sm:flex-row items-start gap-4 shadow-xl select-none"
+        >
+          <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
+          
+          <div className="p-3 bg-amber-500/10 rounded-xl text-amber-400 shrink-0">
+            <AlertTriangle className="w-6 h-6 animate-pulse" />
+          </div>
+
+          <div className="space-y-1.5 flex-1 min-w-0">
+            <h3 className="text-amber-300 font-bold text-base tracking-tight flex items-center gap-2">
+              AI Matcher Unavailable
+            </h3>
+            <p className="text-[#bccbb9]/80 text-sm leading-relaxed">
+              We couldn&apos;t connect to the AI model, so we used a simple text search fallback instead to match your items.
+            </p>
+
+            {result.error && (
+              <div className="mt-3 p-3 bg-black/40 rounded-lg border border-white/5 font-mono text-xs text-[#dee1f7]/70 break-words leading-normal max-w-full">
+                <span className="font-semibold text-amber-400/90 block mb-1 uppercase tracking-wider text-[10px]">Model Error Context</span>
+                {result.error}
+              </div>
+            )}
+          </div>
+        </motion.div>
+      )}
+
       <motion.div variants={childVariants}>
+
         <SummaryStats
           total={result.total}
           savings={result.savings}

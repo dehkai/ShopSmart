@@ -49,3 +49,5 @@ class BasketResult(BaseModel):
     is_single_store: bool = True
     unresolved: list[str] = Field(default_factory=list)
     error: str | None = None
+    is_fuzzy_fallback: bool = False
+

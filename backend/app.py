@@ -41,7 +41,11 @@ def handle_basket(payload: Basket):
             api_key=payload.api_key,
         )
         optimized_basket = optimize(matcher_response.matches, str(DB_FILE), state=payload.state)
+        optimized_basket.is_fuzzy_fallback = matcher_response.is_fuzzy_fallback
+        if matcher_response.error:
+            optimized_basket.error = matcher_response.error
         return optimized_basket
+
 
     except Exception as e:
         raise HTTPException(
