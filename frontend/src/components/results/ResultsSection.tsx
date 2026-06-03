@@ -51,8 +51,10 @@ export function ResultsSection({
     result.items.find((i) => i.cheapest)?.cheapest?.address ??
     null
 
-  // Use original submitted count as denominator; fall back to LLM output count
-  const totalItems = submittedCount ?? (matchedItems.length + result.unresolved.length)
+  // Use LLM-resolved item count (backend may split comma-separated lines into multiple items)
+  const totalItems = result.matches.length > 0
+    ? result.matches.length
+    : (submittedCount ?? 0)
 
   return (
     <motion.section
