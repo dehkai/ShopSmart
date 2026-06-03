@@ -12,13 +12,13 @@ dependencies = [
     "rapidfuzz==3.14.1",
     "pandas==3.0.3",
     "fastparquet==2024.11.0",
-    "groq==1.4.0",
 ]
 
 [dependency-groups]
 dev = [
     "ruff>=0.15.0,<0.16.0",
     "pytest==8.4.2",
+    "pytest-cov>=7.1.0",
 ]
 
 [tool.uv]
@@ -27,3 +27,9 @@ package = false
 [tool.ruff]
 line-length = 88
 target-version = "py314"
+
+[tool.pytest.ini_options]
+pythonpath = [
+    "."
+]
+

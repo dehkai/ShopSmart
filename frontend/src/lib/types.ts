@@ -52,7 +52,7 @@ export interface BasketResult {
 export interface BasketRequest {
   items: string[]
   state?: string
-  provider?: 'gemini' | 'groq'
+  provider?: 'gemini'
   model?: string
   api_key?: string
 }

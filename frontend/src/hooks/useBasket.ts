@@ -82,14 +82,14 @@ export function useBasket() {
   const [submittedCount, setSubmittedCount] = useState<number>(0)
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
-  const [provider, setProvider] = useState<'gemini' | 'groq'>('gemini')
+  const [provider, setProvider] = useState<'gemini'>('gemini')
   const [model, setModel] = useState<string>('gemini-2.5-flash')
   const [apiKey, setApiKey] = useState<string>('')
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const savedProvider = localStorage.getItem('shopsmart_selected_provider') as 'gemini' | 'groq' | null
+      const savedProvider = localStorage.getItem('shopsmart_selected_provider') as 'gemini' | null
       const savedModel = localStorage.getItem('shopsmart_selected_model')
 
       if (savedProvider) {
@@ -109,7 +109,7 @@ export function useBasket() {
   }, [error])
 
   const runSubmit = useCallback(async (
-    overrideProvider?: 'gemini' | 'groq',
+    overrideProvider?: 'gemini',
     overrideModel?: string,
     overrideApiKey?: string
   ) => {
@@ -166,7 +166,7 @@ export function useBasket() {
     await runSubmit()
   }, [runSubmit])
 
-  const handleSaveAPIKey = useCallback((prov: 'gemini' | 'groq', mod: string, key: string) => {
+  const handleSaveAPIKey = useCallback((prov: 'gemini', mod: string, key: string) => {
     setProvider(prov)
     setModel(mod)
     setApiKey(key)
