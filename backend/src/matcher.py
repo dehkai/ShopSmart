@@ -244,13 +244,24 @@ def match_items(
                         error_msg = f"LLM matched item '{match.query}' failed validation: {reason}"
                     fallback_results = fuzzy_match(match.query, db_items)
                     if fallback_results and fallback_results[0].item_code in valid_price_codes:
-                        final_matches.append(fallback_results[0])
+                        fuzzy_result = fallback_results[0]
+                        final_matches.append(ItemMatch(
+                            query=fuzzy_result.query,
+                            item_code=fuzzy_result.item_code,
+                            item_name=fuzzy_result.item_name,
+                            confidence=fuzzy_result.confidence,
+                            resolved=fuzzy_result.resolved,
+                            match_type="fuzzy",
+                        ))
                     else:
                         had_catalog_match = bool(match.item_name and match.item_code)
+                        final_matches.append(ItemMatch(
+                            query=match.query,
                             item_code=None,
                             item_name=match.item_name if had_catalog_match else None,
                             confidence=match.confidence if had_catalog_match else 0.0,
                             resolved=False,
+                            match_type="fuzzy",
                         ))
 
         except (ValidationError, json.JSONDecodeError) as e:
@@ -261,7 +272,18 @@ def match_items(
                 f"LLM returned invalid structure: {e}. Executing full fuzzy match fallback..."
             )
             fallback_results = fuzzy_match(query_text, db_items)
-            final_matches = [res for res in fallback_results if res.item_code in valid_price_codes]
+            final_matches = [
+                ItemMatch(
+                    query=res.query,
+                    item_code=res.item_code,
+                    item_name=res.item_name,
+                    confidence=res.confidence,
+                    resolved=res.resolved,
+                    match_type="fuzzy",
+                )
+                for res in fallback_results
+                if res.item_code in valid_price_codes
+            ]
 
     return MatcherResponse(matches=final_matches, is_fuzzy_fallback=is_fuzzy_fallback, error=error_msg)
 
