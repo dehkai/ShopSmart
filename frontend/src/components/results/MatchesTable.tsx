@@ -69,6 +69,11 @@ export function MatchesTable({ matches, unresolved }: MatchesTableProps) {
             </div>
 
             <div className="shrink-0 flex items-center gap-2">
+              {match.resolved && match.match_type === 'fuzzy' && (
+                <span className="px-3 py-1 bg-white/5 border border-white/10 text-[#bccbb9]/50 text-[10px] font-bold rounded-full uppercase tracking-wider">
+                  Text
+                </span>
+              )}
               {match.resolved ? (
                 getConfidenceBadge(match.confidence)
               ) : match.item_name ? (

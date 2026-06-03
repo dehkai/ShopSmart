@@ -6,6 +6,7 @@ export interface ItemMatch {
   item_name: string | null
   confidence: number // 0.0–1.0
   resolved: boolean
+  match_type: 'llm' | 'fuzzy'
 }
 
 export interface PremisePrice {

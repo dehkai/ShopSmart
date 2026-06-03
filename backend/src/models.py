@@ -7,6 +7,7 @@ class ItemMatch(BaseModel):
     item_name: str | None = None
     confidence: float = Field(default=0.0, ge=0.0, le=1.0)
     resolved: bool = False
+    match_type: str = "llm"  # "llm" | "fuzzy"
 
 
 class PremisePrice(BaseModel):
