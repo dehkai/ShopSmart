@@ -245,6 +245,13 @@ def match_items(
                     fallback_results = fuzzy_match(match.query, db_items)
                     if fallback_results and fallback_results[0].item_code in valid_price_codes:
                         final_matches.append(fallback_results[0])
+                    else:
+                        had_catalog_match = bool(match.item_name and match.item_code)
+                            item_code=None,
+                            item_name=match.item_name if had_catalog_match else None,
+                            confidence=match.confidence if had_catalog_match else 0.0,
+                            resolved=False,
+                        ))
 
         except (ValidationError, json.JSONDecodeError) as e:
             # fallback to fuzzy_match()

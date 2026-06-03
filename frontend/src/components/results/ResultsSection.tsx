@@ -105,10 +105,10 @@ export function ResultsSection({
             {result.error?.startsWith('LLM matched item') ? (
               <>
                 <h3 className="text-amber-300 font-bold text-base tracking-tight flex items-center gap-2">
-                  Partial Text Search Fallback
+                  Some Items Used Text Search
                 </h3>
                 <p className="text-[#bccbb9]/80 text-sm leading-relaxed">
-                  Some items had low AI confidence and were matched using text search instead.
+                  AI matching wasn&apos;t confident for all items. Check the match list below for details.
                 </p>
               </>
             ) : (
@@ -119,14 +119,13 @@ export function ResultsSection({
                 <p className="text-[#bccbb9]/80 text-sm leading-relaxed">
                   Couldn&apos;t connect to the AI model — all items matched using text search fallback.
                 </p>
+                {result.error && (
+                  <div className="mt-3 p-3 bg-black/40 rounded-lg border border-white/5 font-mono text-xs text-[#dee1f7]/70 break-words leading-normal max-w-full">
+                    <span className="font-semibold text-amber-400/90 block mb-1 uppercase tracking-wider text-[10px]">Model Error</span>
+                    {result.error}
+                  </div>
+                )}
               </>
-            )}
-
-            {result.error && (
-              <div className="mt-3 p-3 bg-black/40 rounded-lg border border-white/5 font-mono text-xs text-[#dee1f7]/70 break-words leading-normal max-w-full">
-                <span className="font-semibold text-amber-400/90 block mb-1 uppercase tracking-wider text-[10px]">Model Error Context</span>
-                {result.error}
-              </div>
             )}
           </div>
         </motion.div>
