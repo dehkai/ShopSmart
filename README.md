@@ -233,6 +233,38 @@ The UI has one page that transitions between input view and results view via cli
 
 ---
 
+## Limitations
+
+### Known Issues
+
+#### Sequential Latency Bottleneck in Validation Chain
+
+The current matching engine processes validation checks in a strict, single-threaded sequential loop. When evaluating a user query, the system must wait for the LLM to finish entity matching, then sequentially query the database to verify the item code, and finally check the price matrix table. Because each of these operations must wait for the previous one to finish, analyzing complex, multi-item shopping baskets results in compounding latency. This creates an execution bottleneck that scales poorly as the size of the user’s basket grows.
+
+#### Semantic Degradation in Fallback Matching
+
+When the LLM fails validation or returns malformed structures, the system defaults to `rapidfuzz` token-set-ratio matching. While this prevents a total application crash, fuzzy string matching lacks deep contextual awareness. It evaluates semantic proximity solely based on character arrangements, which can occasionally lead to less accurate or completely misaligned item substitutions compared to an LLM’s intent analysis.
+
+#### Localization Tokenization Gaps
+
+To balance speed and operational cost, the system utilizes Gemini 2.5 Flash Lite as its default model. However, this lightweight parameter size introduces a localized data bias. The model occasionally fails to parse or tokenize niche Malay grocery terms and regional shorthand slang, causing the system to frequently drop out of the intelligent LLM layer and trigger the fallback string matcher for regional product catalogs.
+
+### Future Improvements
+
+#### Asynchronous Multi-Agent Verification Architecture
+
+Transition the current sequential validation loop into a decoupled, parallel execution pipeline. Introducing a supervisor-specialist multi-agent topology will allow chart analysis, price matrices, and catalog entity verification to run concurrently, reducing the end-to-end latency of complex basket matching.
+
+#### Deterministic Pre-Filtering Layer
+
+Integrate a lightweight database validation layer directly into the initial ingestion sequence. By building an upfront set check, the application can instantly invalidate matching candidates that lack complete or structured pricing profiles before ever passing payloads to the LLM, conserving API tokens and optimizing processing cycles.
+
+#### Localization and Synonym Embeddings Layer
+
+Enhance the fuzzy matching fallback layer by implementing a pre-computed dictionary or a local vector embedding matrix for localized grocery nomenclature. Mapping common bilingual synonyms prior to string comparison will eliminate tokenization gaps for niche terms without requiring a costlier, higher-parameter LLM.
+
+---
+
 ## Running Tests
 
 ```bash
