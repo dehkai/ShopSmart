@@ -1,13 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Eye, EyeOff, ShieldCheck, HelpCircle, X } from 'lucide-react'
+import { Eye, EyeOff, Key, HelpCircle, X } from 'lucide-react'
 
 interface APIKeyModalProps {
   isOpen: boolean
   onClose: () => void
-  onSave: (provider: 'gemini' | 'groq', model: string, apiKey: string) => void
-  initialProvider?: 'gemini' | 'groq'
+  onSave: (provider: 'gemini', model: string, apiKey: string) => void
+  initialProvider?: 'gemini'
   initialModel?: string
   initialApiKey?: string
 }
@@ -26,19 +26,6 @@ const PROVIDERS = {
     ],
     defaultModel: 'gemini-2.5-flash',
   },
-  groq: {
-    name: 'Groq Cloud',
-    helpUrl: 'https://console.groq.com/',
-    models: [
-      'llama-3.3-70b-versatile',
-      'llama-3.1-8b-instant',
-      'openai/gpt-oss-120b',
-      'openai/gpt-oss-20b',
-      'meta-llama/llama-4-scout-17b-16e-instruct',
-      'qwen/qwen3-32b',
-    ],
-    defaultModel: 'llama-3.3-70b-versatile',
-  },
 } as const
 
 export function APIKeyModal({
@@ -49,7 +36,7 @@ export function APIKeyModal({
   initialModel,
   initialApiKey = '',
 }: APIKeyModalProps) {
-  const [provider, setProvider] = useState<'gemini' | 'groq'>(initialProvider)
+  const [provider, setProvider] = useState<'gemini'>(initialProvider ?? 'gemini')
   const [model, setModel] = useState<string>('')
   const [apiKey, setApiKey] = useState<string>(initialApiKey)
   const [showKey, setShowKey] = useState<boolean>(false)
@@ -66,11 +53,9 @@ export function APIKeyModal({
   }, [isOpen, initialProvider, initialModel, initialApiKey])
 
   // Update default model when provider changes
-  const handleProviderChange = (prov: 'gemini' | 'groq') => {
+  const handleProviderChange = (prov: 'gemini') => {
     setProvider(prov)
     setModel(PROVIDERS[prov].defaultModel)
-    
-    // Load previously stored key for this provider if it exists
     if (typeof window !== 'undefined') {
       const storedKey = localStorage.getItem(`shopsmart_${prov}_api_key`) || ''
       setApiKey(storedKey)
@@ -105,7 +90,7 @@ export function APIKeyModal({
 
       {/* Modal Container (Radius large: 24px and dark surface color #0e1322) */}
       <div 
-        className="relative bg-[#0e1322] border border-white/10 w-full max-w-md rounded-[24px] p-6 md:p-8 shadow-2xl shadow-black/80 z-10 flex flex-col gap-6 animate-in fade-in zoom-in-95 duration-200"
+        className="relative bg-[#0e1322] border border-white/10 w-full max-w-sm rounded-[24px] p-6 md:p-8 shadow-2xl shadow-black/80 z-10 flex flex-col gap-6 animate-in fade-in zoom-in-95 duration-200"
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
@@ -113,15 +98,18 @@ export function APIKeyModal({
         {/* Header Row */}
         <div className="flex items-center justify-between border-b border-white/5 pb-4">
           <div className="flex items-center gap-2.5">
-            <ShieldCheck className="text-[#22c55e] w-5 h-5 shrink-0" />
-            <h2 id="modal-title" className="text-[#dee1f7] text-base font-bold tracking-tight">
-              API Connection Setup
-            </h2>
+            <Key className="text-[#22c55e] w-5 h-5 shrink-0" />
+            <div>
+              <h2 id="modal-title" className="text-[#dee1f7] text-sm font-bold tracking-tight">
+                API Key Setup
+              </h2>
+              <p className="text-[10px] text-[#bccbb9]/50 font-medium">Configure Google Gemini API key</p>
+            </div>
           </div>
           <button
             onClick={onClose}
             type="button"
-            className="text-[#bccbb9]/60 hover:text-white transition-colors cursor-pointer"
+            className="text-[#bccbb9]/60 hover:text-white transition-colors cursor-pointer w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/5"
             aria-label="Close dialog"
           >
             <X size={18} />
@@ -130,33 +118,6 @@ export function APIKeyModal({
 
         {/* Form Content */}
         <div className="flex flex-col gap-5">
-          {/* Provider Selection */}
-          <div className="flex flex-col gap-2">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-[#bccbb9]/60">
-              Select Provider
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              {(Object.keys(PROVIDERS) as Array<'gemini' | 'groq'>).map((provKey) => {
-                const isSelected = provider === provKey
-                return (
-                  <button
-                    key={provKey}
-                    type="button"
-                    onClick={() => handleProviderChange(provKey)}
-                    className={`py-3 px-4 rounded-xl border text-xs font-bold transition-all duration-200 flex flex-col items-center gap-1 cursor-pointer
-                      ${
-                        isSelected
-                          ? 'bg-[#22c55e]/10 text-[#22c55e] border-[#22c55e]/30 shadow-lg shadow-[#22c55e]/5'
-                          : 'bg-white/5 text-[#bccbb9]/60 border-white/10 hover:bg-white/10 hover:text-white'
-                      }`}
-                  >
-                    <span>{PROVIDERS[provKey].name}</span>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-
           {/* Model Selection */}
           <div className="flex flex-col gap-2">
             <label htmlFor="model-select" className="text-[10px] font-bold uppercase tracking-wider text-[#bccbb9]/60">
@@ -167,7 +128,7 @@ export function APIKeyModal({
                 id="model-select"
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/15 focus:border-[#22c55e]/45 focus:bg-[#090e1c] text-[#dee1f7] text-xs font-semibold rounded-xl px-4 py-3 outline-none cursor-pointer appearance-none transition-all duration-300 shadow-md"
+                className="w-full bg-[#0a0f1c]/50 border border-white/10 hover:border-white/15 focus:border-[#22c55e] focus:bg-[#0a0f1c] focus:ring-2 focus:ring-[#22c55e]/15 text-[#dee1f7] text-xs font-semibold rounded-xl px-4 py-3 outline-none cursor-pointer appearance-none transition-all duration-300 shadow-md"
               >
                 {PROVIDERS[provider].models.map((mOpt) => (
                   <option key={mOpt} value={mOpt} className="bg-[#0e1322] text-[#dee1f7]">
@@ -207,7 +168,7 @@ export function APIKeyModal({
                 className="text-[10px] text-[#60a5fa] hover:underline flex items-center gap-1 font-semibold"
               >
                 <HelpCircle size={11} />
-                <span>Get {provider === 'gemini' ? 'Gemini' : 'Groq'} Key</span>
+                <span>Get Gemini Key</span>
               </a>
             </div>
             
@@ -220,8 +181,8 @@ export function APIKeyModal({
                   setApiKey(e.target.value)
                   setError(null)
                 }}
-                placeholder={`Enter your ${PROVIDERS[provider].name} API key...`}
-                className="w-full bg-[#090e1c]/50 border border-white/10 rounded-xl pl-4 pr-11 py-3 text-xs font-mono text-[#22c55e] focus:ring-1 focus:ring-[#22c55e] focus:border-[#22c55e] outline-none transition-all placeholder:text-[#8e9099]/30"
+                placeholder="Enter your Google Gemini API key..."
+                className="w-full bg-[#0a0f1c]/50 border border-white/10 rounded-xl pl-4 pr-11 py-3 text-xs font-mono text-[#22c55e] focus:ring-2 focus:ring-[#22c55e]/15 focus:border-[#22c55e] outline-none transition-all placeholder:text-[#8e9099]/30"
               />
               <button
                 type="button"
@@ -263,7 +224,7 @@ export function APIKeyModal({
           <button
             onClick={onClose}
             type="button"
-            className="flex-1 py-3 px-4 border border-white/10 rounded-xl text-xs font-bold text-[#bccbb9] hover:bg-white/5 hover:text-white transition-all cursor-pointer"
+            className="flex-1 py-3 px-4 border border-white/10 rounded-xl text-xs font-bold text-[#bccbb9] hover:bg-white/5 hover:text-white active:scale-95 transition-all cursor-pointer"
           >
             Cancel
           </button>

@@ -68,7 +68,7 @@ export default function Home() {
         >
           <span className={`w-1.5 h-1.5 rounded-full ${apiKey ? 'bg-[#22c55e] animate-pulse' : 'bg-red-400'}`} />
           <span className="hidden sm:inline text-[#bccbb9]/60">API Key:</span>
-          <span>{apiKey ? `${provider === 'gemini' ? 'Gemini' : 'Groq'} (${model})` : 'Setup Needed'}</span>
+          <span>{apiKey ? `Gemini (${model})` : 'Setup Needed'}</span>
         </button>
       </header>
 
