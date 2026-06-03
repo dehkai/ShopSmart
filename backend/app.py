@@ -37,6 +37,7 @@ def handle_basket(payload: Basket):
         matcher_response = match_items(
             payload.grocery_list,
             db_items_context,
+            db_path=DB_FILE,
             model=payload.model,
             api_key=payload.api_key,
         )
