@@ -45,6 +45,7 @@ export interface BasketResult {
   store_ranking: StoreRanking[]
   total: number
   savings: number
+  national_average: number
   is_single_store: boolean
   unresolved: string[]
   is_fuzzy_fallback: boolean

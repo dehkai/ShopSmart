@@ -146,6 +146,7 @@ export function ResultsSection({
             storeRanking={result.store_ranking ?? []}
             selectedState={selectedState}
             averageTotal={result.total + result.savings}
+            nationalAverage={result.national_average}
             totalItemCount={totalItems}
           />
         </div>
