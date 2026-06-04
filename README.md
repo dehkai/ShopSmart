@@ -249,6 +249,14 @@ When the LLM fails validation or returns malformed structures, the system defaul
 
 To balance speed and operational cost, the system utilizes Gemini 2.5 Flash Lite as its default model. However, this lightweight parameter size introduces a localized data bias. The model occasionally fails to parse or tokenize niche Malay grocery terms and regional shorthand slang, causing the system to frequently drop out of the intelligent LLM layer and trigger the fallback string matcher for regional product catalogs.
 
+#### State-Level Filtering Is Too Coarse
+
+The current geographic filter operates at the state level (e.g. "Selangor"), which still covers hundreds of premises spread across a large area. A shopper in Petaling Jaya and one in Shah Alam are both shown the same result set even though the cheapest store may be an hour's drive away from either of them. Filtering by state narrows the dataset but does not meaningfully answer the practical question: *which nearby store gives me the best price?*
+
+#### Manual ETL Execution
+
+The data pipeline (`fetch_data.py` + `etl.py`) must be triggered manually each time fresh price data is needed. The upstream PriceCatcher dataset is updated daily by the government, but the local SQLite database will silently become stale unless the operator reruns both scripts. There is no automated refresh mechanism.
+
 ### Future Improvements
 
 #### Asynchronous Multi-Agent Verification Architecture
@@ -262,6 +270,14 @@ Integrate a lightweight database validation layer directly into the initial inge
 #### Localization and Synonym Embeddings Layer
 
 Enhance the fuzzy matching fallback layer by implementing a pre-computed dictionary or a local vector embedding matrix for localized grocery nomenclature. Mapping common bilingual synonyms prior to string comparison will eliminate tokenization gaps for niche terms without requiring a costlier, higher-parameter LLM.
+
+#### Location-Aware Store Recommendations
+
+Replace the state dropdown with browser geolocation (or a postcode input). With the user's coordinates, the optimizer can compute driving distance to each premise and surface the cheapest store within a configurable radius (e.g. 10 km). This turns a broad state-wide result into a genuinely actionable recommendation — the nearest store where the full basket costs the least.
+
+#### Automated Daily ETL via Cron Job
+
+Schedule `fetch_data.py` and the ETL pipeline to run automatically each day, aligned with the PriceCatcher dataset's daily publish cadence. A lightweight cron job (or a cloud scheduler) would pull the latest parquet files, rebuild the SQLite database, and hot-swap the backend's connection so prices stay current without any manual operator intervention.
 
 ---
 
