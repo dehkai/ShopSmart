@@ -1,6 +1,5 @@
 import pytest
 import sqlite3
-from pathlib import Path
 from src.optimizer import (
     find_cheapest_item,
     get_premise_info,
@@ -11,7 +10,7 @@ from src.optimizer import (
     _average_total,
     optimize
 )
-from src.models import ItemMatch, PremisePrice, BasketResult
+from src.models import ItemMatch, BasketResult
 
 
 @pytest.fixture

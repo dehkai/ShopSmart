@@ -1,7 +1,6 @@
 import pytest
 from unittest.mock import patch, MagicMock
 from fastapi.testclient import TestClient
-from pathlib import Path
 
 from app import app
 from src.models import BasketResult, ItemMatch, BasketItemResult
@@ -36,7 +35,10 @@ def test_handle_basket_success(mock_optimize, mock_match_items, mock_fetch_db_it
     ]
     mock_matcher_res = MagicMock()
     mock_matcher_res.matches = mock_matches
+    mock_matcher_res.is_fuzzy_fallback = False
+    mock_matcher_res.error = None
     mock_match_items.return_value = mock_matcher_res
+
     
     # Mock BasketResult
     mock_basket_result = BasketResult(

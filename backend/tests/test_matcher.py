@@ -1,9 +1,8 @@
 import pytest
-from unittest.mock import patch, MagicMock
-from pydantic import ValidationError
+from pathlib import Path
+from unittest.mock import patch
 
-from src.matcher import preprocess_text, fuzzy_match, match_items, MatcherResponse
-from src.models import ItemMatch
+from src.matcher import preprocess_text, fuzzy_match, match_items
 
 
 def test_preprocess_text_empty():
@@ -63,13 +62,15 @@ def test_fuzzy_match_ignores_empty_queries():
     assert results[0].resolved is True
 
 
+@patch("src.matcher.fetch_db_prices")
 @patch("src.matcher.prompt_model")
-def test_match_items_happy_path(mock_prompt):
+def test_match_items_happy_path(mock_prompt, mock_prices):
     db_items = [
         (101, "Beras Siam", "5kg"),
         (102, "Minyak Masak", "1kg"),
     ]
-    
+    mock_prices.return_value = {101, 102}
+
     mock_prompt.return_value = """
     {
       "matches": [
@@ -83,8 +84,8 @@ def test_match_items_happy_path(mock_prompt):
       ]
     }
     """
-    
-    response = match_items("beras", db_items)
+
+    response = match_items("beras", db_items, db_path=Path("/tmp/fake.db"))
     assert len(response.matches) == 1
     assert response.matches[0].resolved is True
     assert response.matches[0].item_code == 101
@@ -92,12 +93,14 @@ def test_match_items_happy_path(mock_prompt):
     assert response.matches[0].confidence == 0.95
 
 
+@patch("src.matcher.fetch_db_prices")
 @patch("src.matcher.prompt_model")
-def test_match_items_low_confidence_fallback(mock_prompt):
+def test_match_items_low_confidence_fallback(mock_prompt, mock_prices):
     db_items = [
         (101, "Beras Siam", "5kg"),
     ]
-    
+    mock_prices.return_value = {101}
+
     # LLM returns match but with low confidence (< 0.7)
     mock_prompt.return_value = """
     {
@@ -112,20 +115,22 @@ def test_match_items_low_confidence_fallback(mock_prompt):
       ]
     }
     """
-    
-    response = match_items("beras 5kg", db_items)
+
+    response = match_items("beras 5kg", db_items, db_path=Path("/tmp/fake.db"))
     assert len(response.matches) == 1
     # Fallback to fuzzy match should still resolve it if it meets the rapidfuzz threshold
     assert response.matches[0].resolved is True
     assert response.matches[0].item_code == 101
 
 
+@patch("src.matcher.fetch_db_prices")
 @patch("src.matcher.prompt_model")
-def test_match_items_invalid_code_fallback(mock_prompt):
+def test_match_items_invalid_code_fallback(mock_prompt, mock_prices):
     db_items = [
         (101, "Beras Siam", "5kg"),
     ]
-    
+    mock_prices.return_value = {101}
+
     # LLM returns invalid item_code 999
     mock_prompt.return_value = """
     {
@@ -140,27 +145,52 @@ def test_match_items_invalid_code_fallback(mock_prompt):
       ]
     }
     """
-    
-    response = match_items("beras 5kg", db_items)
+
+    response = match_items("beras 5kg", db_items, db_path=Path("/tmp/fake.db"))
     assert len(response.matches) == 1
     # Fallback to fuzzy match should match "beras 5kg" to code 101
     assert response.matches[0].resolved is True
     assert response.matches[0].item_code == 101
 
 
+@patch("src.matcher.fetch_db_prices")
 @patch("src.matcher.prompt_model")
-def test_match_items_invalid_json_fallback(mock_prompt):
+def test_match_items_invalid_json_fallback(mock_prompt, mock_prices):
     db_items = [
         (101, "Beras Siam", "5kg"),
     ]
-    
+    mock_prices.return_value = {101}
+
     mock_prompt.return_value = "invalid json format here"
-    
+
     # If JSON is invalid, should fall back entirely to fuzzy match
-    response = match_items("beras 5kg", db_items)
+    response = match_items("beras 5kg", db_items, db_path=Path("/tmp/fake.db"))
     assert len(response.matches) == 1
     assert response.matches[0].resolved is True
     assert response.matches[0].item_code == 101
+    assert response.is_fuzzy_fallback is True
+    assert response.error is not None
+    assert "invalid JSON structure" in response.error
+
+
+@patch("src.matcher.fetch_db_prices")
+@patch("src.matcher.prompt_model")
+def test_match_items_model_error_fallback(mock_prompt, mock_prices):
+    db_items = [
+        (101, "Beras Siam", "5kg"),
+    ]
+    mock_prices.return_value = {101}
+
+    mock_prompt.return_value = "[Gemini Error] GEMINI_API environment variable not set."
+
+    # If LLM API fails, should fall back entirely to fuzzy match
+    response = match_items("beras 5kg", db_items, db_path=Path("/tmp/fake.db"))
+    assert len(response.matches) == 1
+    assert response.matches[0].resolved is True
+    assert response.matches[0].item_code == 101
+    assert response.is_fuzzy_fallback is True
+    assert response.error == "[Gemini Error] GEMINI_API environment variable not set."
+
 
 
 def test_fetch_db_items_success(tmp_path):
