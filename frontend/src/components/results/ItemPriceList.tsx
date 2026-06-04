@@ -29,7 +29,7 @@ function DetailedBreakdown({ items }: { items: BasketItemResult[] }) {
       </div>
 
       <div className="overflow-x-auto w-full">
-        <table className="w-full text-left border-collapse min-w-[700px]">
+        <table className="w-full text-left border-collapse min-w-[820px]">
           <thead>
             <tr className="bg-white/[0.02] text-[10px] font-bold uppercase tracking-wider text-[#bccbb9] border-b border-white/10">
               <th className="px-8 py-4">Item Name</th>
@@ -65,17 +65,17 @@ function DetailedBreakdown({ items }: { items: BasketItemResult[] }) {
                   <td className="px-8 py-5 text-[#bccbb9]">
                     {cheapest?.state ?? <span className="text-[#bccbb9]/30">—</span>}
                   </td>
-                  <td className={`px-8 py-5 font-bold font-mono text-sm ${hasCheapest ? 'text-[#22c55e]' : 'text-[#bccbb9]'}`}>
+                  <td className={`px-8 py-5 font-bold font-mono text-sm whitespace-nowrap ${hasCheapest ? 'text-[#22c55e]' : 'text-[#bccbb9]'}`}>
                     {cheapest ? `RM ${cheapest.price.toFixed(2)}` : '—'}
                   </td>
                   <td className="px-8 py-5 text-right font-mono">
                     {hasCheapest && pricesWithData.length > 1 ? (
                       variance <= 0 ? (
-                        <span className="bg-[#22c55e]/15 text-[#22c55e] border border-[#22c55e]/25 px-2.5 py-0.5 rounded-full text-[10px] font-bold">
+                        <span className="inline-block whitespace-nowrap bg-[#22c55e]/15 text-[#22c55e] border border-[#22c55e]/25 px-2.5 py-0.5 rounded-full text-[10px] font-bold">
                           - RM {Math.abs(variance).toFixed(2)}
                         </span>
                       ) : (
-                        <span className="bg-[#ffb5ab]/15 text-[#ffb5ab] border border-[#ffb5ab]/25 px-2.5 py-0.5 rounded-full text-[10px] font-bold">
+                        <span className="inline-block whitespace-nowrap bg-[#ffb5ab]/15 text-[#ffb5ab] border border-[#ffb5ab]/25 px-2.5 py-0.5 rounded-full text-[10px] font-bold">
                           + RM {variance.toFixed(2)}
                         </span>
                       )
@@ -170,13 +170,13 @@ function ConveniencePremium({ items, recommendedStore }: { items: BasketItemResu
                 >
                   <td className="px-8 py-5 font-semibold text-[#dee1f7]">{item.item_name}</td>
 
-                  <td className="px-8 py-5 font-bold font-mono text-sm text-[#dee1f7]">
+                  <td className="px-8 py-5 font-bold font-mono text-sm whitespace-nowrap text-[#dee1f7]">
                     {storePrice != null
                       ? `RM ${storePrice.toFixed(2)}`
                       : <span className="text-[#bccbb9]/30">—</span>}
                   </td>
 
-                  <td className="px-8 py-5 font-mono text-[#22c55e]">
+                  <td className="px-8 py-5 font-mono whitespace-nowrap text-[#22c55e]">
                     {cheapest
                       ? `RM ${cheapest.price.toFixed(2)}`
                       : <span className="text-[#bccbb9]/30">—</span>}
@@ -186,15 +186,15 @@ function ConveniencePremium({ items, recommendedStore }: { items: BasketItemResu
                     {premium === null ? (
                       <span className="text-[#bccbb9]/30">—</span>
                     ) : isMatch ? (
-                      <span className="bg-[#22c55e]/15 text-[#22c55e] border border-[#22c55e]/25 px-2.5 py-0.5 rounded-full text-[10px] font-bold">
+                      <span className="inline-block whitespace-nowrap bg-[#22c55e]/15 text-[#22c55e] border border-[#22c55e]/25 px-2.5 py-0.5 rounded-full text-[10px] font-bold">
                         Match
                       </span>
                     ) : premium > 0 ? (
-                      <span className="bg-[#ffb5ab]/15 text-[#ffb5ab] border border-[#ffb5ab]/25 px-2.5 py-0.5 rounded-full text-[10px] font-bold">
+                      <span className="inline-block whitespace-nowrap bg-[#ffb5ab]/15 text-[#ffb5ab] border border-[#ffb5ab]/25 px-2.5 py-0.5 rounded-full text-[10px] font-bold">
                         + RM {premium.toFixed(2)}
                       </span>
                     ) : (
-                      <span className="bg-[#22c55e]/15 text-[#22c55e] border border-[#22c55e]/25 px-2.5 py-0.5 rounded-full text-[10px] font-bold">
+                      <span className="inline-block whitespace-nowrap bg-[#22c55e]/15 text-[#22c55e] border border-[#22c55e]/25 px-2.5 py-0.5 rounded-full text-[10px] font-bold">
                         Match
                       </span>
                     )}

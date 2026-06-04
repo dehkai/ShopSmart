@@ -68,7 +68,7 @@ export function BasketInput({
         placeholder={PLACEHOLDER}
         disabled={loading}
         rows={8}
-        className="w-full h-48 bg-[#090e1c]/50 border border-white/10 rounded-xl p-5 font-mono text-[#22c55e] focus:ring-1 focus:ring-[#22c55e] focus:border-[#22c55e] outline-none transition-all placeholder:text-[#8e9099]/30 resize-none text-sm leading-relaxed"
+        className="w-full h-48 lg:h-[clamp(6rem,16vh,18rem)] bg-[#090e1c]/50 border border-white/10 rounded-xl p-4 lg:p-4 font-mono text-[#22c55e] focus:ring-1 focus:ring-[#22c55e] focus:border-[#22c55e] outline-none transition-all placeholder:text-[#8e9099]/30 resize-none text-sm leading-relaxed"
         spellCheck={false}
         aria-label="Enter grocery items, one per line"
       />

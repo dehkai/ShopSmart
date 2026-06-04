@@ -47,12 +47,12 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col relative bg-[#0e1322] text-[#dee1f7] overflow-x-hidden selection:bg-[#22c55e]/30">
+    <div className="min-h-screen lg:h-screen flex flex-col relative bg-[#0e1322] text-[#dee1f7] overflow-x-hidden selection:bg-[#22c55e]/30">
 
       <div className="fixed inset-0 grain-overlay z-0 pointer-events-none" />
       <div className="fixed -bottom-48 -left-48 w-[600px] h-[600px] bg-[#22c55e]/10 rounded-full blur-[120px] z-0 pointer-events-none" />
 
-      <header className="absolute top-6 left-6 right-6 md:left-16 md:right-16 z-50 flex items-center justify-between select-none">
+      <header className="relative z-50 flex items-center justify-between px-6 md:px-16 py-6 flex-shrink-0 select-none">
         <div
           onClick={() => result && reset()}
           className="font-sans text-2xl font-extrabold text-[#22c55e] tracking-tighter cursor-pointer"
@@ -82,16 +82,16 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10, transition: { duration: 0.25 } }}
               transition={{ duration: 0.45, ease: EASE }}
-              className="relative z-10 pt-20 pb-20 lg:pt-32 px-6 md:px-16 max-w-7xl mx-auto min-h-screen lg:h-screen flex items-center w-full lg:overflow-hidden"
+              className="relative z-10 pb-12 px-6 md:px-16 max-w-7xl mx-auto flex-1 flex items-center w-full overflow-hidden"
             >
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center w-full">
 
-                <div className="lg:col-span-7 space-y-6">
-                  <header className="space-y-3">
+                <div className="lg:col-span-7 space-y-6 lg:space-y-4">
+                  <div className="space-y-3 lg:space-y-2">
                     <h1
                       className="font-extrabold tracking-tight text-[#dee1f7]"
                       style={{
-                        fontSize: 'clamp(2.2rem, 5vw, 3.4rem)',
+                        fontSize: 'clamp(1.9rem, 3.4vw, 3.4rem)',
                         lineHeight: 1.1,
                       }}
                     >
@@ -103,9 +103,9 @@ export default function Home() {
                     <p className="text-[#bccbb9] text-sm leading-relaxed max-w-xl">
                       Paste your shopping list. Our AI matches every item to real PriceCatcher data and finds where your basket costs least.
                     </p>
-                  </header>
+                  </div>
 
-                  <div className="glass-card rounded-[2rem] p-6 md:p-8 space-y-6 shadow-2xl shadow-black/20">
+                  <div className="glass-card rounded-[2rem] p-6 md:p-8 lg:p-6 space-y-6 lg:space-y-4 shadow-2xl shadow-black/20">
                     <StateSelector
                       value={selectedState}
                       onChange={setSelectedState}
@@ -132,7 +132,7 @@ export default function Home() {
 
                     {/* Floating Preview Card Container */}
                     <div
-                      className="glass-card w-[380px] rounded-3xl p-6 border-[#22c55e]/20 shadow-2xl relative z-10 transition-all duration-500 ease-out"
+                      className="glass-card w-[340px] rounded-3xl p-5 border-[#22c55e]/20 shadow-2xl relative z-10 transition-all duration-500 ease-out"
                       style={{
                         transform: `rotateY(${tilt.x}deg) rotateX(${tilt.y}deg)`,
                         transformStyle: 'preserve-3d',
@@ -222,9 +222,9 @@ export default function Home() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="w-full flex-1 flex flex-col"
+              className="w-full flex-1 flex flex-col overflow-y-auto"
             >
-              <div className="pt-20 pb-16 px-6 md:px-16 w-full max-w-7xl mx-auto">
+              <div className="pb-16 px-6 md:px-16 w-full max-w-7xl mx-auto">
 
                 <AnimatePresence>
                   {error && (
