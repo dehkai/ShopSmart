@@ -22,9 +22,7 @@ class MatcherResponse(BaseModel):
     error: str | None = None
 
 
-
 # --- 3-LAYER ITEM MATCHING FROM MESSY TEXT INPUT ---
-
 
 
 def preprocess_text(text: str) -> str:
@@ -103,6 +101,7 @@ def fetch_db_items(db_path: Path) -> List[Tuple[int, str, str]]:
 
     return rows
 
+
 # gets list of item codes with price records from prices table
 def fetch_db_prices(db_path: Path) -> Set[int]:
 
@@ -121,7 +120,7 @@ def fetch_db_prices(db_path: Path) -> Set[int]:
 
         # extract individual codes into a hash set for price record validation
         return {row[0] for row in rows}
-        
+
     except sqlite3.Error as e:
         print(f"Database error while fetching price records: {e}")
         return set()
@@ -142,20 +141,20 @@ def llm_match(
     # input validation filters
     if not query_text or not query_text.strip():
         return "[Error] Input Validation failed: Empty query string."
-    
+
     sub_queries = [q.strip() for q in query_text.split(",") if q.strip()]
 
     # prevent excessive list to LLM causing timeouts (scalability)
     if len(sub_queries) > 100:
-        return f"[Error] Input validation failed: Basket exceeds maximum limit of 100 items."
-    
+        return "[Error] Input validation failed: Basket exceeds maximum limit of 100 items."
+
     # common prompt/sql injection phrases
     malicious_patterns = [
         r"ignore prior instructions",
         r"forget everything you were told",
         r"system_prompt",
         r"drop table",
-        r"delete from"
+        r"delete from",
     ]
 
     for item in sub_queries:
@@ -206,7 +205,6 @@ def llm_match(
         {json.dumps(MatcherLLMResponse.model_json_schema(), indent=2)}
     """
 
-
     resolved_model = model or "gemini-2.5-flash-lite"
     response = prompt_model(resolved_model, matcher_prompt, api_key=api_key)
     return response
@@ -232,7 +230,9 @@ def match_items(
     if raw_llm_output.startswith(("[Error]", "[Gemini Error]", "[Ollama Error]")):
         is_fuzzy_fallback = True
         error_msg = raw_llm_output
-        print(f"LLM call failed with error: {error_msg}. Executing full fuzzy match fallback...")
+        print(
+            f"LLM call failed with error: {error_msg}. Executing full fuzzy match fallback..."
+        )
         final_matches = fuzzy_match(query_text, db_items)
     else:
         llm_json_output = re.sub(r"^\s*```json", "", llm_json_output)
@@ -253,7 +253,13 @@ def match_items(
                 is_confident = match.confidence >= 0.7
 
                 # check for resolve, item_code exists in db, high confidence - prevents hallucination
-                if match.resolved and match.item_code and is_valid_code and has_price_record and is_confident:
+                if (
+                    match.resolved
+                    and match.item_code
+                    and is_valid_code
+                    and has_price_record
+                    and is_confident
+                ):
                     final_matches.append(match)
                 else:
                     # fallback to fuzzy_match()
@@ -272,26 +278,37 @@ def match_items(
                             reason = f"low confidence ({match.confidence})"
                         error_msg = f"LLM matched item '{match.query}' failed validation: {reason}"
                     fallback_results = fuzzy_match(match.query, db_items)
-                    if fallback_results and fallback_results[0].item_code in valid_price_codes:
+                    if (
+                        fallback_results
+                        and fallback_results[0].item_code in valid_price_codes
+                    ):
                         fuzzy_result = fallback_results[0]
-                        final_matches.append(ItemMatch(
-                            query=fuzzy_result.query,
-                            item_code=fuzzy_result.item_code,
-                            item_name=fuzzy_result.item_name,
-                            confidence=fuzzy_result.confidence,
-                            resolved=fuzzy_result.resolved,
-                            match_type="fuzzy",
-                        ))
+                        final_matches.append(
+                            ItemMatch(
+                                query=fuzzy_result.query,
+                                item_code=fuzzy_result.item_code,
+                                item_name=fuzzy_result.item_name,
+                                confidence=fuzzy_result.confidence,
+                                resolved=fuzzy_result.resolved,
+                                match_type="fuzzy",
+                            )
+                        )
                     else:
                         had_catalog_match = bool(match.item_name and match.item_code)
-                        final_matches.append(ItemMatch(
-                            query=match.query,
-                            item_code=None,
-                            item_name=match.item_name if had_catalog_match else None,
-                            confidence=match.confidence if had_catalog_match else 0.0,
-                            resolved=False,
-                            match_type="fuzzy",
-                        ))
+                        final_matches.append(
+                            ItemMatch(
+                                query=match.query,
+                                item_code=None,
+                                item_name=match.item_name
+                                if had_catalog_match
+                                else None,
+                                confidence=match.confidence
+                                if had_catalog_match
+                                else 0.0,
+                                resolved=False,
+                                match_type="fuzzy",
+                            )
+                        )
 
         except (ValidationError, json.JSONDecodeError) as e:
             # fallback to fuzzy_match()
@@ -314,8 +331,9 @@ def match_items(
                 if res.item_code in valid_price_codes
             ]
 
-    return MatcherResponse(matches=final_matches, is_fuzzy_fallback=is_fuzzy_fallback, error=error_msg)
-
+    return MatcherResponse(
+        matches=final_matches, is_fuzzy_fallback=is_fuzzy_fallback, error=error_msg
+    )
 
 
 def main():
