@@ -139,6 +139,34 @@ def llm_match(
     api_key: str | None = None,
 ) -> str:
 
+    # input validation filters
+    if not query_text or not query_text.strip():
+        return "[Error] Input Validation failed: Empty query string."
+    
+    sub_queries = [q.strip() for q in query_text.split(",") if q.strip()]
+
+    # prevent excessive list to LLM causing timeouts (scalability)
+    if len(sub_queries) > 100:
+        return f"[Error] Input validation failed: Basket exceeds maximum limit of 100 items."
+    
+    # common prompt/sql injection phrases
+    malicious_patterns = [
+        r"ignore prior instructions",
+        r"forget everything you were told",
+        r"system_prompt",
+        r"drop table",
+        r"delete from"
+    ]
+
+    for item in sub_queries:
+        # prevent long texts (edge case)
+        if len(item) > 80:
+            return f"[Error] Input validation failed: Item description '{item[:20]}...' is too long."
+        # prevent malicious texts (security)
+        for pattern in malicious_patterns:
+            if re.search(pattern, item, re.IGNORECASE):
+                return "[Error] Input validation failed: Malicious input signatures detected."
+
     # format the structured tuple list into a clean, text-based catalog for the LLM
     catelog_lines = []
     for (
@@ -216,6 +244,7 @@ def match_items(
         final_matches: List[ItemMatch] = []
 
         try:
+            # check for llm response format (json)
             llm_response = MatcherLLMResponse.model_validate_json(llm_json_output)
 
             for match in llm_response.matches:
@@ -223,7 +252,7 @@ def match_items(
                 has_price_record = match.item_code in valid_price_codes
                 is_confident = match.confidence >= 0.7
 
-                # check for resolve, item_code exists in db, high confidence
+                # check for resolve, item_code exists in db, high confidence - prevents hallucination
                 if match.resolved and match.item_code and is_valid_code and has_price_record and is_confident:
                     final_matches.append(match)
                 else:
