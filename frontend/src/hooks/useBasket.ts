@@ -92,6 +92,7 @@ export function useBasket() {
   const [model, setModel] = useState<string>('gemini-2.5-flash')
   const [apiKey, setApiKey] = useState<string>('')
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
+  const [pendingOptimize, setPendingOptimize] = useState<boolean>(false)
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -135,6 +136,7 @@ export function useBasket() {
 
     // If API key is missing, intercept and trigger modal setup!
     if (!currentApiKey.trim()) {
+      setPendingOptimize(true)
       setIsModalOpen(true)
       return
     }
@@ -188,14 +190,22 @@ export function useBasket() {
       }
     }
 
-    if (key) {
+    if (key && pendingOptimize) {
+      setPendingOptimize(false)
       runSubmit(prov, mod, key)
+    } else {
+      setPendingOptimize(false)
     }
-  }, [runSubmit])
+  }, [runSubmit, pendingOptimize])
 
   const reset = useCallback(() => {
     setResult(null)
     setError(null)
+  }, [])
+
+  const handleCloseModal = useCallback(() => {
+    setPendingOptimize(false)
+    setIsModalOpen(false)
   }, [])
 
   return {
@@ -215,6 +225,7 @@ export function useBasket() {
     apiKey,
     isModalOpen,
     setIsModalOpen,
+    handleCloseModal,
     handleSaveAPIKey,
   }
 }

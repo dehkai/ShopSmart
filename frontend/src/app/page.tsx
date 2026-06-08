@@ -29,6 +29,7 @@ export default function Home() {
     apiKey,
     isModalOpen,
     setIsModalOpen,
+    handleCloseModal,
     handleSaveAPIKey,
   } = useBasket()
 
@@ -256,7 +257,7 @@ export default function Home() {
       {/* Connection setup modal popup (design.md aligned) */}
       <APIKeyModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={handleCloseModal}
         onSave={handleSaveAPIKey}
         initialProvider={provider}
         initialModel={model}
