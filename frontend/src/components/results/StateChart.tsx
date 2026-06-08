@@ -234,7 +234,13 @@ export function StateChart({
     )
   }
 
-  if (!stateRanking || stateRanking.length === 0) return null
+  if (!stateRanking || stateRanking.length === 0) {
+    return (
+      <div className="glass-card p-8 rounded-xl flex flex-col justify-center items-center gap-3 min-h-[220px]">
+        <p className="text-sm text-[#bccbb9]/60">No pricing data available — no items were matched.</p>
+      </div>
+    )
+  }
 
   return <StateMode stateRanking={stateRanking} nationalAverage={nationalAverage} />
 }

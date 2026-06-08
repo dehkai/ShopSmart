@@ -46,11 +46,13 @@ export function SummaryStats({
         <div className="text-[10px] font-bold uppercase tracking-widest text-[#bccbb9]">
           Best Total
         </div>
-        <div className={`font-mono text-3xl font-extrabold my-auto ${isSingleStore ? 'text-[#22c55e]' : 'text-[#facc15]'}`}>
-          RM {total.toFixed(2)}
+        <div className={`font-mono text-3xl font-extrabold my-auto ${matchedCount === 0 ? 'text-[#bccbb9]/40' : isSingleStore ? 'text-[#22c55e]' : 'text-[#facc15]'}`}>
+          {matchedCount === 0 ? '—' : `RM ${total.toFixed(2)}`}
         </div>
         <div className="text-xs text-[#bccbb9]/80 flex items-center gap-1">
-          {isSingleStore ? (
+          {matchedCount === 0 ? (
+            <span className="text-[#bccbb9]/40">No items priced</span>
+          ) : isSingleStore ? (
             <>
               <MapPin size={12} className="text-[#22c55e]" />
               <span>{displayState ?? 'Malaysia'}</span>
