@@ -24,15 +24,15 @@ def test_fuzzy_match_direct_match():
         (102, "Minyak Masak", "1kg"),
         (103, "Telur Ayam Gred A", "10pcs"),
     ]
-    
+
     results = fuzzy_match("beras siam 5kg, minyak masak", db_items)
-    
+
     assert len(results) == 2
     assert results[0].resolved is True
     assert results[0].item_code == 101
     assert results[0].item_name == "Beras Siam"
     assert results[0].confidence > 0.6
-    
+
     assert results[1].resolved is True
     assert results[1].item_code == 102
     assert results[1].item_name == "Minyak Masak"
@@ -43,9 +43,9 @@ def test_fuzzy_match_no_match():
     db_items = [
         (101, "Beras Siam", "5kg"),
     ]
-    
+
     results = fuzzy_match("something completely unrelated", db_items)
-    
+
     assert len(results) == 1
     assert results[0].resolved is False
     assert results[0].item_code is None
@@ -56,7 +56,7 @@ def test_fuzzy_match_ignores_empty_queries():
     db_items = [
         (101, "Beras Siam", "5kg"),
     ]
-    
+
     results = fuzzy_match("beras 5kg, , ", db_items)
     assert len(results) == 1
     assert results[0].resolved is True
@@ -192,7 +192,6 @@ def test_match_items_model_error_fallback(mock_prompt, mock_prices):
     assert response.error == "[Gemini Error] GEMINI_API environment variable not set."
 
 
-
 def test_fetch_db_items_success(tmp_path):
     import sqlite3
     from pathlib import Path
@@ -223,6 +222,5 @@ def test_fetch_db_items_missing_file():
 
     with pytest.raises(SystemExit) as exc_info:
         fetch_db_items(Path("non_existent_db_file.db"))
-    
-    assert exc_info.value.code == 1
 
+    assert exc_info.value.code == 1

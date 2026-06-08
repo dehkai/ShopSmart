@@ -43,11 +43,15 @@ def call_model(model: str, prompt: str, api_key: str | None = None) -> tuple[str
         return f"[Error] Unexpected failure: {e}", 0
 
 
-def _call_gemini(model: str, prompt: str, api_key: str | None = None) -> tuple[str, int]:
+def _call_gemini(
+    model: str, prompt: str, api_key: str | None = None
+) -> tuple[str, int]:
     try:
         from google import genai
 
-        key = api_key or os.environ.get("GEMINI_API") or os.environ.get("GOOGLE_API_KEY")
+        key = (
+            api_key or os.environ.get("GEMINI_API") or os.environ.get("GOOGLE_API_KEY")
+        )
         if not key:
             return "[Gemini Error] GEMINI_API environment variable not set.", 0
 
@@ -71,6 +75,7 @@ def _call_ollama(model: str, prompt: str) -> tuple[str, int]:
         return response.message.content, tokens
     except Exception as e:
         return f"[Ollama Error] {e}", 0
+
 
 def main():
     if len(sys.argv) >= 3:

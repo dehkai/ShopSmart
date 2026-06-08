@@ -1,12 +1,21 @@
 import sqlite3
-from src.models import PremisePrice, ItemMatch, BasketItemResult, BasketResult, StateRanking, StoreRanking
+from src.models import (
+    PremisePrice,
+    ItemMatch,
+    BasketItemResult,
+    BasketResult,
+    StateRanking,
+    StoreRanking,
+)
 
 
 def _placeholders(n: int) -> str:
     return ",".join(["?"] * n)
 
 
-def find_cheapest_item(item_code: int, db_path: str, state: str | None = None) -> PremisePrice | None:
+def find_cheapest_item(
+    item_code: int, db_path: str, state: str | None = None
+) -> PremisePrice | None:
     with sqlite3.connect(db_path) as conn:
         if state:
             row = conn.execute(
@@ -36,10 +45,14 @@ def find_cheapest_item(item_code: int, db_path: str, state: str | None = None) -
     if row is None:
         return None
 
-    return PremisePrice(premise_code=row[0], premise=row[1], state=row[2], price=row[3], address=row[4])
+    return PremisePrice(
+        premise_code=row[0], premise=row[1], state=row[2], price=row[3], address=row[4]
+    )
 
 
-def get_premise_info(premise_code: int, db_path: str) -> tuple[str, str, str | None] | None:
+def get_premise_info(
+    premise_code: int, db_path: str
+) -> tuple[str, str, str | None] | None:
     with sqlite3.connect(db_path) as conn:
         row = conn.execute(
             "SELECT premise, state, address FROM premises WHERE premise_code = ? LIMIT 1",
@@ -48,7 +61,9 @@ def get_premise_info(premise_code: int, db_path: str) -> tuple[str, str, str | N
     return (row[0], row[1], row[2]) if row else None
 
 
-def get_item_price_at_store(item_code: int, premise_code: int, db_path: str) -> float | None:
+def get_item_price_at_store(
+    item_code: int, premise_code: int, db_path: str
+) -> float | None:
     with sqlite3.connect(db_path) as conn:
         row = conn.execute(
             "SELECT price FROM prices WHERE item_code = ? AND premise_code = ? LIMIT 1",
@@ -57,7 +72,9 @@ def get_item_price_at_store(item_code: int, premise_code: int, db_path: str) -> 
     return row[0] if row else None
 
 
-def find_cheapest_store(item_codes: list[int], db_path: str, state: str | None = None) -> tuple[int, float] | None:
+def find_cheapest_store(
+    item_codes: list[int], db_path: str, state: str | None = None
+) -> tuple[int, float] | None:
     with sqlite3.connect(db_path) as conn:
         if state:
             row = conn.execute(
@@ -136,7 +153,9 @@ def state_ranking(item_codes: list[int], db_path: str) -> list[StateRanking]:
     for row in rows:
         if row[0] not in seen:
             seen.add(row[0])
-            result.append(StateRanking(state=row[0], total=round(row[1], 2), items_found=row[2]))
+            result.append(
+                StateRanking(state=row[0], total=round(row[1], 2), items_found=row[2])
+            )
     return result
 
 
@@ -189,7 +208,9 @@ def top_stores_in_state(
     ]
 
 
-def _average_total(item_codes: list[int], db_path: str, state: str | None = None) -> float:
+def _average_total(
+    item_codes: list[int], db_path: str, state: str | None = None
+) -> float:
     with sqlite3.connect(db_path) as conn:
         if state:
             row = conn.execute(
@@ -223,7 +244,9 @@ def _average_total(item_codes: list[int], db_path: str, state: str | None = None
     return row[0] or 0.0
 
 
-def optimize(matches: list[ItemMatch], db_path: str, state: str | None = None) -> BasketResult:
+def optimize(
+    matches: list[ItemMatch], db_path: str, state: str | None = None
+) -> BasketResult:
     resolved = []
     unresolved = []
     items = []
@@ -240,17 +263,21 @@ def optimize(matches: list[ItemMatch], db_path: str, state: str | None = None) -
             unresolved.append(match.query)
             continue
         if cheapest:
-            items.append(BasketItemResult(
-                item_code=match.item_code,
-                item_name=match.item_name,
-                cheapest=cheapest,
-            ))
+            items.append(
+                BasketItemResult(
+                    item_code=match.item_code,
+                    item_name=match.item_name,
+                    cheapest=cheapest,
+                )
+            )
         else:
             unresolved.append(match.query)
 
     item_codes = [m.item_code for m in resolved]
     if not item_codes:
-        return BasketResult(matches=matches, items=[], total=0.0, savings=0.0, unresolved=unresolved)
+        return BasketResult(
+            matches=matches, items=[], total=0.0, savings=0.0, unresolved=unresolved
+        )
 
     try:
         cheapest_store = find_cheapest_store(item_codes, db_path, state=state)
@@ -261,14 +288,20 @@ def optimize(matches: list[ItemMatch], db_path: str, state: str | None = None) -
             store_rank = top_stores_in_state(item_codes, db_path, state)
         elif cheapest_store:
             info = get_premise_info(cheapest_store[0], db_path)
-            store_rank = [StoreRanking(
-                premise_code=cheapest_store[0],
-                premise=info[0] if info else f"Store {cheapest_store[0]}",
-                state=info[1] if info else None,
-                total=round(cheapest_store[1], 2),
-                items_found=len(item_codes),
-                address=info[2] if info else None,
-            )] if info else []
+            store_rank = (
+                [
+                    StoreRanking(
+                        premise_code=cheapest_store[0],
+                        premise=info[0] if info else f"Store {cheapest_store[0]}",
+                        state=info[1] if info else None,
+                        total=round(cheapest_store[1], 2),
+                        items_found=len(item_codes),
+                        address=info[2] if info else None,
+                    )
+                ]
+                if info
+                else []
+            )
         else:
             store_rank = []
     except sqlite3.Error as e:
@@ -297,7 +330,9 @@ def optimize(matches: list[ItemMatch], db_path: str, state: str | None = None) -
     # Populate store_price: price of each item at the recommended basket store
     if best_premise_code is not None:
         for item in items:
-            item.store_price = get_item_price_at_store(item.item_code, best_premise_code, db_path)
+            item.store_price = get_item_price_at_store(
+                item.item_code, best_premise_code, db_path
+            )
 
     savings = round(average_total - best_total, 2)
     national_avg = round(_average_total(item_codes, db_path, state=None), 2)
