@@ -52,4 +52,3 @@ class BasketResult(BaseModel):
     unresolved: list[str] = Field(default_factory=list)
     error: str | None = None
     is_fuzzy_fallback: bool = False
-
