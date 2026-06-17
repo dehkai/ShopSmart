@@ -23,7 +23,7 @@ export function StateSelector({ value, onChange }: StateSelectorProps) {
           id="state-selector"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/15 focus:border-[#22c55e]/45 focus:bg-[#090e1c] text-[#dee1f7] text-xs font-semibold rounded-xl px-4 py-3 outline-none cursor-pointer appearance-none transition-all duration-300 shadow-md"
+          className="w-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/15 focus:border-[#22c55e]/45 focus:bg-[#090e1c] text-[#dee1f7] text-xs font-semibold rounded-xl px-4 py-3 outline-none cursor-pointer appearance-none transition-[background-color,border-color] duration-200 shadow-md"
         >
           <option value="" className="bg-[#0e1322] text-[#dee1f7] font-semibold">
             All States (National Average)

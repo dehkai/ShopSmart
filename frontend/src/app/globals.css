@@ -40,6 +40,15 @@
   --radius-lg:   12px;
   --radius-xl:   24px;
   --radius-full: 9999px;
+
+  /* Easing */
+  --ease-out:    cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+
+  /* Durations */
+  --duration-fast:   140ms;
+  --duration-normal: 200ms;
+  --duration-slow:   300ms;
 }
 
 /* Base */
@@ -110,7 +119,7 @@ body::after {
   transform: translateX(-200%);
 }
 .btn-shimmer:hover:not(:disabled)::before {
-  animation: shimmer-sweep 0.55s ease forwards;
+  animation: shimmer-sweep 0.55s var(--ease-out) forwards;
 }
 
 @keyframes shimmer-sweep {
@@ -131,7 +140,7 @@ body::after {
   to { transform: rotate(360deg); }
 }
 .animate-spin {
-  animation: spin 0.7s linear infinite;
+  animation: spin 0.5s linear infinite;
 }
 
 /* Live pulse dot */
@@ -175,7 +184,7 @@ body::after {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: box-shadow var(--duration-slow) var(--ease-out);
 }
 
 .glass-card:hover {
@@ -196,7 +205,7 @@ body::after {
   height: 200%;
   background: linear-gradient(45deg, transparent, rgba(255,255,255,0.08), transparent);
   transform: rotate(45deg);
-  transition: 0.55s;
+  transition: top 0.55s var(--ease-out), left 0.55s var(--ease-out);
   pointer-events: none;
 }
 
@@ -223,7 +232,7 @@ body::after {
 
 .bar-grow {
   transform-origin: left;
-  animation: growRight 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: growRight 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes growRight {
@@ -237,5 +246,15 @@ body::after {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Respect reduced-motion: keep opacity/color, kill movement */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 

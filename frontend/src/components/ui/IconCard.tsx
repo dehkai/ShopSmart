@@ -16,7 +16,7 @@ export function IconCard({ icon, name, spec, priceRange, savingsPct }: IconCardP
       className="glass glass-hover p-5 flex flex-col items-center gap-3 text-center relative"
       style={{ borderRadius: '14px' }}
       whileHover={{ y: -3 }}
-      transition={{ duration: 0.2 }}
+      transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
     >
       {/* Savings badge */}
       <span

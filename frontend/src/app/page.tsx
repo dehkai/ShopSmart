@@ -255,14 +255,17 @@ export default function Home() {
       </div>
 
       {/* Connection setup modal popup (design.md aligned) */}
-      <APIKeyModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        onSave={handleSaveAPIKey}
-        initialProvider={provider}
-        initialModel={model}
-        initialApiKey={apiKey}
-      />
+      <AnimatePresence>
+        {isModalOpen && (
+          <APIKeyModal
+            onClose={handleCloseModal}
+            onSave={handleSaveAPIKey}
+            initialProvider={provider}
+            initialModel={model}
+            initialApiKey={apiKey}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }

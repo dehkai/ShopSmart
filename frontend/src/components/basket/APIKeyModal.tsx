@@ -1,16 +1,18 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { motion } from 'framer-motion'
 import { Eye, EyeOff, Key, HelpCircle, X } from 'lucide-react'
 
 interface APIKeyModalProps {
-  isOpen: boolean
   onClose: () => void
   onSave: (provider: 'gemini', model: string, apiKey: string) => void
   initialProvider?: 'gemini'
   initialModel?: string
   initialApiKey?: string
 }
+
+const MODAL_EASE = [0.23, 1, 0.32, 1] as const
 
 const PROVIDERS = {
   gemini: {
@@ -29,41 +31,19 @@ const PROVIDERS = {
 } as const
 
 export function APIKeyModal({
-  isOpen,
   onClose,
   onSave,
   initialProvider = 'gemini',
   initialModel,
   initialApiKey = '',
 }: APIKeyModalProps) {
-  const [provider, setProvider] = useState<'gemini'>(initialProvider ?? 'gemini')
-  const [model, setModel] = useState<string>('')
+  const [provider] = useState<'gemini'>(initialProvider ?? 'gemini')
+  const [model, setModel] = useState<string>(
+    initialModel || PROVIDERS[initialProvider ?? 'gemini'].defaultModel
+  )
   const [apiKey, setApiKey] = useState<string>(initialApiKey)
   const [showKey, setShowKey] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
-
-  // Update selection when initial values change or modal opens
-  useEffect(() => {
-    if (isOpen) {
-      setProvider(initialProvider)
-      setApiKey(initialApiKey)
-      setModel(initialModel || PROVIDERS[initialProvider].defaultModel)
-      setError(null)
-    }
-  }, [isOpen, initialProvider, initialModel, initialApiKey])
-
-  // Update default model when provider changes
-  const handleProviderChange = (prov: 'gemini') => {
-    setProvider(prov)
-    setModel(PROVIDERS[prov].defaultModel)
-    if (typeof window !== 'undefined') {
-      const storedKey = localStorage.getItem(`shopsmart_${prov}_api_key`) || ''
-      setApiKey(storedKey)
-    }
-    setError(null)
-  }
-
-  if (!isOpen) return null
 
   const handleRevoke = () => {
     setApiKey('')
@@ -83,14 +63,22 @@ export function APIKeyModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Translucent Backdrop blur */}
-      <div 
-        className="absolute inset-0 bg-black/60 backdrop-blur-md transition-opacity duration-300"
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="absolute inset-0 bg-black/60 backdrop-blur-md"
         onClick={onClose}
       />
 
       {/* Modal Container (Radius large: 24px and dark surface color #0e1322) */}
-      <div 
-        className="relative bg-[#0e1322] border border-white/10 w-full max-w-sm rounded-[24px] p-6 md:p-8 shadow-2xl shadow-black/80 z-10 flex flex-col gap-6 animate-in fade-in zoom-in-95 duration-200"
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.15 } }}
+        transition={{ duration: 0.2, ease: MODAL_EASE }}
+        className="relative bg-[#0e1322] border border-white/10 w-full max-w-sm rounded-[24px] p-6 md:p-8 shadow-2xl shadow-black/80 z-10 flex flex-col gap-6"
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
@@ -213,9 +201,14 @@ export function APIKeyModal({
 
           {/* Error Message */}
           {error && (
-            <div className="text-[11px] text-red-400 bg-red-950/20 border border-red-900/30 p-3 rounded-lg leading-relaxed select-none animate-in fade-in slide-in-from-top-1 duration-200">
+            <motion.div
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2, ease: MODAL_EASE }}
+              className="text-[11px] text-red-400 bg-red-950/20 border border-red-900/30 p-3 rounded-lg leading-relaxed select-none"
+            >
               {error}
-            </div>
+            </motion.div>
           )}
         </div>
 
@@ -236,7 +229,7 @@ export function APIKeyModal({
             Save & Continue
           </button>
         </div>
-      </div>
+      </motion.div>
     </div>
   )
 }
