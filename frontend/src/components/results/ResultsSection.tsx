@@ -93,7 +93,7 @@ export function ResultsSection({
       {result.is_fuzzy_fallback && (
         <motion.div
           variants={childVariants}
-          className="relative overflow-hidden glass-card border border-amber-500/20 bg-amber-500/5 rounded-2xl p-5 md:p-6 flex flex-col sm:flex-row items-start gap-4 shadow-xl select-none"
+          className="relative overflow-hidden glass-card border border-amber-500/20 bg-amber-500/5 rounded-2xl p-5 md:p-6 flex flex-col sm:flex-row items-start gap-4 select-none"
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
 

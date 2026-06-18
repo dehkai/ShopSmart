@@ -128,7 +128,7 @@ export default function Home() {
                     </p>
                   </div>
 
-                  <div className="glass-card rounded-[2rem] p-6 md:p-8 lg:p-6 space-y-6 lg:space-y-4 shadow-2xl shadow-black/20">
+                  <div className="glass-card rounded-[2rem] p-6 md:p-8 lg:p-6 space-y-6 lg:space-y-4">
                     <StateSelector
                       value={selectedState}
                       onChange={setSelectedState}
@@ -155,7 +155,7 @@ export default function Home() {
 
                     {/* Floating Preview Card Container */}
                     <div
-                      className="glass-card w-[340px] rounded-3xl p-5 border-primary/20 shadow-2xl relative z-10 transition-all duration-500 ease-out"
+                      className="glass-card w-[340px] rounded-3xl p-5 border-primary/20 relative z-10 transition-all duration-500 ease-out"
                       style={{
                         transform: `rotateY(${tilt.x}deg) rotateX(${tilt.y}deg)`,
                         transformStyle: 'preserve-3d',

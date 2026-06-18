@@ -18,7 +18,7 @@ function DetailedBreakdown({ items }: { items: BasketItemResult[] }) {
       : 0
 
   return (
-    <div className="glass-card rounded-xl overflow-hidden shadow-2xl">
+    <div className="glass-card rounded-xl overflow-hidden">
       <div className="p-8 border-b border-border bg-surface-dim/50">
         <h3 className="text-sm font-semibold uppercase tracking-widest text-muted mb-1">
           Detailed Price Breakdown
@@ -104,7 +104,7 @@ function ConveniencePremium({ items, recommendedStore }: { items: BasketItemResu
   }, 0)
 
   return (
-    <div className="glass-card rounded-xl overflow-hidden shadow-2xl">
+    <div className="glass-card rounded-xl overflow-hidden">
       <div className="p-8 border-b border-border bg-surface-dim/50 flex items-start justify-between gap-4">
         <div>
           <h3 className="text-sm font-semibold uppercase tracking-widest text-muted mb-1">
