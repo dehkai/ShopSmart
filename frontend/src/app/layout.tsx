@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
+import { Providers } from './providers'
 
 const geist = Geist({
   subsets: ['latin'],
@@ -32,17 +33,15 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geist.variable} ${geistMono.variable} ${jetbrainsMono.variable} antialiased`}
         style={{
           fontFamily: 'var(--font-geist), ui-sans-serif, system-ui, sans-serif',
-          backgroundColor: '#0e1322',
-          color: '#e2e2e6',
           minHeight: '100vh',
         }}
       >
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   )

@@ -1,9 +1,9 @@
 import { GlassCard } from './GlassCard'
 
 const accentColors = {
-  green: 'text-[#22c55e]',
-  blue: 'text-[#60a5fa]',
-  white: 'text-[#e2e2e6]',
+  green: 'text-primary',
+  blue: 'text-secondary',
+  white: 'text-fg',
 } as const
 
 interface StatCardProps {
@@ -24,8 +24,8 @@ export function StatCard({
   return (
     <GlassCard padding="md" hover className="flex flex-col gap-1">
       <p
-        className="text-xs font-semibold uppercase tracking-widest"
-        style={{ color: '#c4c6d0', letterSpacing: '0.1em' }}
+        className="text-xs font-semibold uppercase tracking-widest text-muted"
+        style={{ letterSpacing: '0.1em' }}
       >
         {label}
       </p>
@@ -35,7 +35,7 @@ export function StatCard({
         {value}
       </p>
       {subtext && (
-        <p className="text-xs mt-0.5" style={{ color: '#8e9099' }}>
+        <p className="text-xs mt-0.5 text-subtle">
           {subtext}
         </p>
       )}

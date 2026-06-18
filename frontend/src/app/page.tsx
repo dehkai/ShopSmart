@@ -1,7 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useTheme } from 'next-themes'
+import { Sun, Moon } from 'lucide-react'
 import { useBasket } from '@/hooks/useBasket'
 import { BasketInput } from '@/components/basket/BasketInput'
 import { StateSelector } from '@/components/basket/StateSelector'
@@ -33,6 +35,10 @@ export default function Home() {
     handleSaveAPIKey,
   } = useBasket()
 
+  const { resolvedTheme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+
   // 3D Parallax hover state for the floating card
   const [tilt, setTilt] = useState({ x: -2, y: 0 })
 
@@ -48,29 +54,45 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen lg:h-screen flex flex-col relative bg-[#0e1322] text-[#dee1f7] overflow-x-hidden selection:bg-[#22c55e]/30">
+    <div className="min-h-screen lg:h-screen flex flex-col relative bg-surface text-fg overflow-x-hidden selection:bg-primary/30">
 
       <div className="fixed inset-0 grain-overlay z-0 pointer-events-none" />
-      <div className="fixed -bottom-48 -left-48 w-[600px] h-[600px] bg-[#22c55e]/10 rounded-full blur-[120px] z-0 pointer-events-none" />
+      <div className="fixed -bottom-48 -left-48 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] z-0 pointer-events-none" />
 
       <header className="relative z-50 flex items-center justify-between px-6 md:px-16 py-6 flex-shrink-0 select-none">
         <div
           onClick={() => result && reset()}
-          className="font-sans text-2xl font-extrabold text-[#22c55e] tracking-tighter cursor-pointer"
+          className="font-sans text-2xl font-extrabold text-primary tracking-tighter cursor-pointer"
         >
           ShopSmart
         </div>
 
-        {/* API Connection settings indicator */}
-        <button
-          onClick={() => setIsModalOpen(true)}
-          type="button"
-          className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 hover:border-white/15 transition-all text-xs font-semibold text-[#dee1f7] cursor-pointer"
-        >
-          <span className={`w-1.5 h-1.5 rounded-full ${apiKey ? 'bg-[#22c55e] animate-pulse' : 'bg-red-400'}`} />
-          <span className="hidden sm:inline text-[#bccbb9]/60">API Key:</span>
-          <span>{apiKey ? `Gemini (${model})` : 'Setup Needed'}</span>
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Theme toggle */}
+          <button
+            type="button"
+            onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+            className="w-9 h-9 flex items-center justify-center rounded-full bg-overlay-sm border border-border hover:bg-overlay-md transition-[background-color,border-color] duration-200 text-muted hover:text-fg cursor-pointer"
+            aria-label="Toggle theme"
+          >
+            {mounted ? (
+              resolvedTheme === 'dark' ? <Sun size={15} /> : <Moon size={15} />
+            ) : (
+              <span className="w-4 h-4" />
+            )}
+          </button>
+
+          {/* API Connection settings indicator */}
+          <button
+            onClick={() => setIsModalOpen(true)}
+            type="button"
+            className="flex items-center gap-2 px-4 py-2 bg-overlay-sm border border-border rounded-full hover:bg-overlay-md hover:border-overlay-lg transition-[background-color,border-color] duration-200 text-xs font-semibold text-fg cursor-pointer"
+          >
+            <span className={`w-1.5 h-1.5 rounded-full ${apiKey ? 'bg-primary animate-pulse' : 'bg-red-400'}`} />
+            <span className="hidden sm:inline text-muted/60">API Key:</span>
+            <span>{apiKey ? `Gemini (${model})` : 'Setup Needed'}</span>
+          </button>
+        </div>
       </header>
 
       <div className="relative z-10 flex flex-col flex-1">
@@ -90,18 +112,18 @@ export default function Home() {
                 <div className="lg:col-span-7 space-y-6 lg:space-y-4">
                   <div className="space-y-3 lg:space-y-2">
                     <h1
-                      className="font-extrabold tracking-tight text-[#dee1f7]"
+                      className="font-extrabold tracking-tight text-fg"
                       style={{
                         fontSize: 'clamp(1.9rem, 3.4vw, 3.4rem)',
                         lineHeight: 1.1,
                       }}
                     >
                       Find the cheapest groceries{' '}
-                      <span className="block bg-gradient-to-r from-[#22c55e] to-[#60a5fa] bg-clip-text text-transparent">
+                      <span className="block bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                         anywhere in Malaysia
                       </span>
                     </h1>
-                    <p className="text-[#bccbb9] text-sm leading-relaxed max-w-xl">
+                    <p className="text-muted text-sm leading-relaxed max-w-xl">
                       Paste your shopping list. Our AI matches every item to real PriceCatcher data and finds where your basket costs least.
                     </p>
                   </div>
@@ -129,48 +151,48 @@ export default function Home() {
                   <div className="relative group perspective-[1000px]">
 
                     {/* Glowing backdrops */}
-                    <div className="absolute inset-0 bg-[#22c55e]/20 blur-3xl group-hover:bg-[#22c55e]/30 transition-all duration-500 rounded-full" />
+                    <div className="absolute inset-0 bg-primary/20 blur-3xl group-hover:bg-primary/30 transition-all duration-500 rounded-full" />
 
                     {/* Floating Preview Card Container */}
                     <div
-                      className="glass-card w-[340px] rounded-3xl p-5 border-[#22c55e]/20 shadow-2xl relative z-10 transition-all duration-500 ease-out"
+                      className="glass-card w-[340px] rounded-3xl p-5 border-primary/20 shadow-2xl relative z-10 transition-all duration-500 ease-out"
                       style={{
                         transform: `rotateY(${tilt.x}deg) rotateX(${tilt.y}deg)`,
                         transformStyle: 'preserve-3d',
                       }}
                     >
                       <div className="flex justify-between items-center mb-6">
-                        <span className="text-[12px] font-semibold uppercase tracking-wider text-[#bccbb9]">Live Comparison</span>
-                        <span className="text-[#22c55e] text-[12px] font-bold bg-[#22c55e]/10 px-2.5 py-0.5 rounded">-14% Avg</span>
+                        <span className="text-[12px] font-semibold uppercase tracking-wider text-muted">Live Comparison</span>
+                        <span className="text-primary text-[12px] font-bold bg-primary/10 px-2.5 py-0.5 rounded">-14% Avg</span>
                       </div>
 
                       <div className="space-y-4">
 
                         {/* Sample item 1 */}
-                        <div className="flex items-center justify-between border-b border-white/5 pb-3">
+                        <div className="flex items-center justify-between border-b border-border/40 pb-3">
                           <div className="min-w-0 flex-1">
-                            <div className="text-[#dee1f7] font-semibold text-xs leading-normal">Holland Onions</div>
-                            <div className="text-[#bccbb9]/60 text-[10px] mt-0.5 truncate">Mydin Chow Kit · Selangor</div>
+                            <div className="text-fg font-semibold text-xs leading-normal">Holland Onions</div>
+                            <div className="text-muted/60 text-[10px] mt-0.5 truncate">Mydin Chow Kit · Selangor</div>
                           </div>
 
                           <div className="flex flex-col items-end shrink-0 ml-4">
-                            <div className="text-[#22c55e] font-mono text-xs font-semibold">RM 4.50</div>
-                            <span className="bg-[#22c55e]/15 text-[#22c55e] border border-[#22c55e]/25 px-2 py-0.5 rounded-full text-[9px] font-bold mt-1 select-none pointer-events-none">
+                            <div className="text-primary font-mono text-xs font-semibold">RM 4.50</div>
+                            <span className="bg-primary/15 text-primary border border-primary/25 px-2 py-0.5 rounded-full text-[9px] font-bold mt-1 select-none pointer-events-none">
                               - RM 0.80
                             </span>
                           </div>
                         </div>
 
                         {/* Sample item 2 */}
-                        <div className="flex items-center justify-between border-b border-white/5 pb-3">
+                        <div className="flex items-center justify-between border-b border-border/40 pb-3">
                           <div className="min-w-0 flex-1">
-                            <div className="text-[#dee1f7] font-semibold text-xs leading-normal">Dutch Lady Milk</div>
-                            <div className="text-[#bccbb9]/60 text-[10px] mt-0.5 truncate">Lotus's Cheras · KL</div>
+                            <div className="text-fg font-semibold text-xs leading-normal">Dutch Lady Milk</div>
+                            <div className="text-muted/60 text-[10px] mt-0.5 truncate">Lotus&apos;s Cheras · KL</div>
                           </div>
 
                           <div className="flex flex-col items-end shrink-0 ml-4">
-                            <div className="text-[#22c55e] font-mono text-xs font-semibold">RM 7.20</div>
-                            <span className="bg-[#22c55e]/15 text-[#22c55e] border border-[#22c55e]/25 px-2 py-0.5 rounded-full text-[9px] font-bold mt-1 select-none pointer-events-none">
+                            <div className="text-primary font-mono text-xs font-semibold">RM 7.20</div>
+                            <span className="bg-primary/15 text-primary border border-primary/25 px-2 py-0.5 rounded-full text-[9px] font-bold mt-1 select-none pointer-events-none">
                               - RM 1.10
                             </span>
                           </div>
@@ -179,13 +201,13 @@ export default function Home() {
                         {/* Sample item 3 */}
                         <div className="flex items-center justify-between pb-1">
                           <div className="min-w-0 flex-1">
-                            <div className="text-[#dee1f7] font-semibold text-xs leading-normal">Sawi Choy Sum</div>
-                            <div className="text-[#bccbb9]/60 text-[10px] mt-0.5 truncate">Giant Supermarket · Johor</div>
+                            <div className="text-fg font-semibold text-xs leading-normal">Sawi Choy Sum</div>
+                            <div className="text-muted/60 text-[10px] mt-0.5 truncate">Giant Supermarket · Johor</div>
                           </div>
 
                           <div className="flex flex-col items-end shrink-0 ml-4">
-                            <div className="text-[#22c55e] font-mono text-xs font-semibold">RM 2.80</div>
-                            <span className="bg-[#22c55e]/15 text-[#22c55e] border border-[#22c55e]/25 px-2 py-0.5 rounded-full text-[9px] font-bold mt-1 select-none pointer-events-none">
+                            <div className="text-primary font-mono text-xs font-semibold">RM 2.80</div>
+                            <span className="bg-primary/15 text-primary border border-primary/25 px-2 py-0.5 rounded-full text-[9px] font-bold mt-1 select-none pointer-events-none">
                               - RM 0.50
                             </span>
                           </div>
@@ -195,21 +217,21 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <div className="mt-6 text-[#bccbb9]/40 text-xs italic tracking-wide">Example output</div>
+                  <div className="mt-6 text-muted/40 text-xs italic tracking-wide">Example output</div>
 
                   {/* Trust statistics row */}
                   <div className="mt-6 flex gap-4 select-none">
-                    <div className="glass-card px-4 py-2 rounded-full flex items-center gap-2 border-white/5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#22c55e]" />
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#dee1f7]">2M+ prices/month</span>
+                    <div className="glass-card px-4 py-2 rounded-full flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-fg">2M+ prices/month</span>
                     </div>
-                    <div className="glass-card px-4 py-2 rounded-full flex items-center gap-2 border-white/5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#22c55e]" />
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#dee1f7]">16 states</span>
+                    <div className="glass-card px-4 py-2 rounded-full flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-fg">16 states</span>
                     </div>
-                    <div className="glass-card px-4 py-2 rounded-full flex items-center gap-2 border-white/5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#22c55e]" />
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#dee1f7]">1000+ items</span>
+                    <div className="glass-card px-4 py-2 rounded-full flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-fg">1000+ items</span>
                     </div>
                   </div>
                 </div>
@@ -235,7 +257,7 @@ export default function Home() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -8 }}
                       transition={{ duration: 0.25 }}
-                      className="glass mb-6 px-4 py-3 rounded-lg flex items-start gap-3 text-sm text-[#ffb4ab]"
+                      className="glass mb-6 px-4 py-3 rounded-lg flex items-start gap-3 text-sm text-error"
                       style={{ borderColor: 'rgba(255,180,171,0.3)' }}
                       role="alert"
                     >

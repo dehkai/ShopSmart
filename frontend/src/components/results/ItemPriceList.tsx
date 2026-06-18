@@ -19,11 +19,11 @@ function DetailedBreakdown({ items }: { items: BasketItemResult[] }) {
 
   return (
     <div className="glass-card rounded-xl overflow-hidden shadow-2xl">
-      <div className="p-8 border-b border-white/10 bg-[#090e1c]/50">
-        <h3 className="text-sm font-semibold uppercase tracking-widest text-[#bccbb9] mb-1">
+      <div className="p-8 border-b border-border bg-surface-dim/50">
+        <h3 className="text-sm font-semibold uppercase tracking-widest text-muted mb-1">
           Detailed Price Breakdown
         </h3>
-        <p className="text-xs text-[#bccbb9]/60">
+        <p className="text-xs text-muted/60">
           Item-by-item comparison across regional stores
         </p>
       </div>
@@ -31,7 +31,7 @@ function DetailedBreakdown({ items }: { items: BasketItemResult[] }) {
       <div className="overflow-x-auto w-full">
         <table className="w-full text-left border-collapse min-w-[820px]">
           <thead>
-            <tr className="bg-white/[0.02] text-[10px] font-bold uppercase tracking-wider text-[#bccbb9] border-b border-white/10">
+            <tr className="bg-overlay-xs text-[10px] font-bold uppercase tracking-wider text-muted border-b border-border">
               <th className="px-8 py-4">Item Name</th>
               <th className="px-8 py-4">Cheapest Store</th>
               <th className="px-8 py-4">State</th>
@@ -52,35 +52,35 @@ function DetailedBreakdown({ items }: { items: BasketItemResult[] }) {
               return (
                 <tr
                   key={item.item_code ?? `item-${idx}`}
-                  className={`border-b border-white/5 hover:bg-white/[0.03] transition-colors ${
+                  className={`border-b border-border/30 hover:bg-overlay-sm transition-colors ${
                     hasCheapest && idx === 0
-                      ? 'bg-[#22c55e]/5 border-l-4 border-l-[#22c55e]'
+                      ? 'bg-primary/5 border-l-4 border-l-primary'
                       : 'border-l-4 border-l-transparent'
                   }`}
                 >
-                  <td className="px-8 py-5 font-semibold text-[#dee1f7]">{item.item_name}</td>
-                  <td className="px-8 py-5 text-[#bccbb9]">
-                    {cheapest?.premise ?? <span className="text-[#bccbb9]/30 italic">No store found</span>}
+                  <td className="px-8 py-5 font-semibold text-fg">{item.item_name}</td>
+                  <td className="px-8 py-5 text-muted">
+                    {cheapest?.premise ?? <span className="text-muted/30 italic">No store found</span>}
                   </td>
-                  <td className="px-8 py-5 text-[#bccbb9]">
-                    {cheapest?.state ?? <span className="text-[#bccbb9]/30">—</span>}
+                  <td className="px-8 py-5 text-muted">
+                    {cheapest?.state ?? <span className="text-muted/30">—</span>}
                   </td>
-                  <td className={`px-8 py-5 font-bold font-mono text-sm whitespace-nowrap ${hasCheapest ? 'text-[#22c55e]' : 'text-[#bccbb9]'}`}>
+                  <td className={`px-8 py-5 font-bold font-mono text-sm whitespace-nowrap ${hasCheapest ? 'text-primary' : 'text-muted'}`}>
                     {cheapest ? `RM ${cheapest.price.toFixed(2)}` : '—'}
                   </td>
                   <td className="px-8 py-5 text-right font-mono">
                     {hasCheapest && pricesWithData.length > 1 ? (
                       variance <= 0 ? (
-                        <span className="inline-block whitespace-nowrap bg-[#22c55e]/15 text-[#22c55e] border border-[#22c55e]/25 px-2.5 py-0.5 rounded-full text-[10px] font-bold">
+                        <span className="inline-block whitespace-nowrap bg-primary/15 text-primary border border-primary/25 px-2.5 py-0.5 rounded-full text-[10px] font-bold">
                           - RM {Math.abs(variance).toFixed(2)}
                         </span>
                       ) : (
-                        <span className="inline-block whitespace-nowrap bg-[#ffb5ab]/15 text-[#ffb5ab] border border-[#ffb5ab]/25 px-2.5 py-0.5 rounded-full text-[10px] font-bold">
+                        <span className="inline-block whitespace-nowrap bg-error/15 text-error border border-error/25 px-2.5 py-0.5 rounded-full text-[10px] font-bold">
                           + RM {variance.toFixed(2)}
                         </span>
                       )
                     ) : (
-                      <span className="text-[#bccbb9]/30">—</span>
+                      <span className="text-muted/30">—</span>
                     )}
                   </td>
                 </tr>
@@ -105,12 +105,12 @@ function ConveniencePremium({ items, recommendedStore }: { items: BasketItemResu
 
   return (
     <div className="glass-card rounded-xl overflow-hidden shadow-2xl">
-      <div className="p-8 border-b border-white/10 bg-[#090e1c]/50 flex items-start justify-between gap-4">
+      <div className="p-8 border-b border-border bg-surface-dim/50 flex items-start justify-between gap-4">
         <div>
-          <h3 className="text-sm font-semibold uppercase tracking-widest text-[#bccbb9] mb-1">
+          <h3 className="text-sm font-semibold uppercase tracking-widest text-muted mb-1">
             Convenience Premium Analysis
           </h3>
-          <p className="text-xs text-[#bccbb9]/60">
+          <p className="text-xs text-muted/60">
             {recommendedStore
               ? `Prices at ${recommendedStore} vs cheapest alternative per item`
               : 'Price at recommended store vs cheapest alternative per item'}
@@ -118,18 +118,18 @@ function ConveniencePremium({ items, recommendedStore }: { items: BasketItemResu
         </div>
         {items.some(i => i.store_price != null) && (
           <div className="text-right shrink-0">
-            <p className="text-[10px] uppercase tracking-widest text-[#bccbb9]/50 mb-0.5">Total Premium</p>
+            <p className="text-[10px] uppercase tracking-widest text-muted/50 mb-0.5">Total Premium</p>
             {totalConveniencePremium > 0 ? (
               <>
-                <p className="text-lg font-bold font-mono text-[#ffb5ab]">
+                <p className="text-lg font-bold font-mono text-error">
                   + RM {totalConveniencePremium.toFixed(2)}
                 </p>
-                <p className="text-[10px] text-[#bccbb9]/40">to shop one store</p>
+                <p className="text-[10px] text-muted/40">to shop one store</p>
               </>
             ) : (
               <>
-                <p className="text-lg font-bold font-mono text-[#22c55e]">RM 0.00</p>
-                <p className="text-[10px] text-[#bccbb9]/40">already optimal</p>
+                <p className="text-lg font-bold font-mono text-primary">RM 0.00</p>
+                <p className="text-[10px] text-muted/40">already optimal</p>
               </>
             )}
           </div>
@@ -139,7 +139,7 @@ function ConveniencePremium({ items, recommendedStore }: { items: BasketItemResu
       <div className="overflow-x-auto w-full">
         <table className="w-full text-left border-collapse min-w-[800px]">
           <thead>
-            <tr className="bg-white/[0.02] text-[10px] font-bold uppercase tracking-wider text-[#bccbb9] border-b border-white/10">
+            <tr className="bg-overlay-xs text-[10px] font-bold uppercase tracking-wider text-muted border-b border-border">
               <th className="px-8 py-4">Item Name</th>
               <th className="px-8 py-4">Price at Best Store</th>
               <th className="px-8 py-4">Absolute Best Price</th>
@@ -160,53 +160,53 @@ function ConveniencePremium({ items, recommendedStore }: { items: BasketItemResu
               return (
                 <tr
                   key={item.item_code ?? `item-${idx}`}
-                  className={`border-b border-white/5 hover:bg-white/[0.03] transition-colors border-l-4 ${
+                  className={`border-b border-border/30 hover:bg-overlay-sm transition-colors border-l-4 ${
                     isMatch
-                      ? 'border-l-[#22c55e]/40'
+                      ? 'border-l-primary/40'
                       : premium && premium > 0
-                      ? 'border-l-[#ffb5ab]/40'
+                      ? 'border-l-error/40'
                       : 'border-l-transparent'
                   }`}
                 >
-                  <td className="px-8 py-5 font-semibold text-[#dee1f7]">{item.item_name}</td>
+                  <td className="px-8 py-5 font-semibold text-fg">{item.item_name}</td>
 
-                  <td className="px-8 py-5 font-bold font-mono text-sm whitespace-nowrap text-[#dee1f7]">
+                  <td className="px-8 py-5 font-bold font-mono text-sm whitespace-nowrap text-fg">
                     {storePrice != null
                       ? `RM ${storePrice.toFixed(2)}`
-                      : <span className="text-[#bccbb9]/30">—</span>}
+                      : <span className="text-muted/30">—</span>}
                   </td>
 
-                  <td className="px-8 py-5 font-mono whitespace-nowrap text-[#22c55e]">
+                  <td className="px-8 py-5 font-mono whitespace-nowrap text-primary">
                     {cheapest
                       ? `RM ${cheapest.price.toFixed(2)}`
-                      : <span className="text-[#bccbb9]/30">—</span>}
+                      : <span className="text-muted/30">—</span>}
                   </td>
 
                   <td className="px-8 py-5 font-mono">
                     {premium === null ? (
-                      <span className="text-[#bccbb9]/30">—</span>
+                      <span className="text-muted/30">—</span>
                     ) : isMatch ? (
-                      <span className="inline-block whitespace-nowrap bg-[#22c55e]/15 text-[#22c55e] border border-[#22c55e]/25 px-2.5 py-0.5 rounded-full text-[10px] font-bold">
+                      <span className="inline-block whitespace-nowrap bg-primary/15 text-primary border border-primary/25 px-2.5 py-0.5 rounded-full text-[10px] font-bold">
                         Match
                       </span>
                     ) : premium > 0 ? (
-                      <span className="inline-block whitespace-nowrap bg-[#ffb5ab]/15 text-[#ffb5ab] border border-[#ffb5ab]/25 px-2.5 py-0.5 rounded-full text-[10px] font-bold">
+                      <span className="inline-block whitespace-nowrap bg-error/15 text-error border border-error/25 px-2.5 py-0.5 rounded-full text-[10px] font-bold">
                         + RM {premium.toFixed(2)}
                       </span>
                     ) : (
-                      <span className="inline-block whitespace-nowrap bg-[#22c55e]/15 text-[#22c55e] border border-[#22c55e]/25 px-2.5 py-0.5 rounded-full text-[10px] font-bold">
+                      <span className="inline-block whitespace-nowrap bg-primary/15 text-primary border border-primary/25 px-2.5 py-0.5 rounded-full text-[10px] font-bold">
                         Match
                       </span>
                     )}
                   </td>
 
-                  <td className="px-8 py-5 text-[#bccbb9]">
+                  <td className="px-8 py-5 text-muted">
                     {cheapest ? (
                       isMatch
-                        ? <span className="text-[#bccbb9]/40 italic">Same store</span>
+                        ? <span className="text-muted/40 italic">Same store</span>
                         : cheapest.premise
                     ) : (
-                      <span className="text-[#bccbb9]/30">—</span>
+                      <span className="text-muted/30">—</span>
                     )}
                   </td>
                 </tr>

@@ -12,7 +12,7 @@ export function StateSelector({ value, onChange }: StateSelectorProps) {
     <div className="flex flex-col gap-2">
       <label
         htmlFor="state-selector"
-        className="text-[10px] font-bold uppercase tracking-wider text-[#bccbb9]/60"
+        className="text-[10px] font-bold uppercase tracking-wider text-muted/60"
         style={{ letterSpacing: '0.1em' }}
       >
         Select Region
@@ -23,13 +23,13 @@ export function StateSelector({ value, onChange }: StateSelectorProps) {
           id="state-selector"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/15 focus:border-[#22c55e]/45 focus:bg-[#090e1c] text-[#dee1f7] text-xs font-semibold rounded-xl px-4 py-3 outline-none cursor-pointer appearance-none transition-[background-color,border-color] duration-200 shadow-md"
+          className="w-full bg-overlay-sm border border-border hover:bg-overlay-md hover:border-border/60 focus:border-primary/45 focus:bg-surface-dim text-fg text-xs font-semibold rounded-xl px-4 py-3 outline-none cursor-pointer appearance-none transition-[background-color,border-color] duration-200 shadow-md"
         >
-          <option value="" className="bg-[#0e1322] text-[#dee1f7] font-semibold">
+          <option value="" className="bg-surface text-fg font-semibold">
             All States (National Average)
           </option>
           {MALAYSIAN_STATES.map((state) => (
-            <option key={state} value={state} className="bg-[#0e1322] text-[#dee1f7]">
+            <option key={state} value={state} className="bg-surface text-fg">
               {state}
             </option>
           ))}
@@ -37,7 +37,7 @@ export function StateSelector({ value, onChange }: StateSelectorProps) {
 
         <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none select-none">
           <svg
-            className="w-4 h-4 text-[#8e9099] opacity-70"
+            className="w-4 h-4 text-subtle opacity-70"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
