@@ -137,7 +137,7 @@ export function MobileAppShell({
   }
 
   return (
-    <div className="fixed inset-0 h-screen w-screen flex flex-col bg-surface text-fg z-50 select-none overflow-hidden">
+    <div className="fixed inset-0 h-[100dvh] w-screen flex flex-col bg-surface text-fg z-50 select-none overflow-hidden">
       {/* 1. Header (iOS style sticky header) */}
       <header className="flex-shrink-0 flex items-center justify-between px-5 py-4 border-b border-border bg-surface-dim/35 backdrop-blur-md relative z-20">
         <div className="flex items-center gap-2">
