@@ -16,15 +16,15 @@ export function IconCard({ icon, name, spec, priceRange, savingsPct }: IconCardP
       className="glass glass-hover p-5 flex flex-col items-center gap-3 text-center relative"
       style={{ borderRadius: '14px' }}
       whileHover={{ y: -3 }}
-      transition={{ duration: 0.2 }}
+      transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
     >
       {/* Savings badge */}
       <span
         className="absolute top-3 right-3 text-xs font-bold px-2 py-0.5 rounded-full mono"
         style={{
-          background: 'rgba(34,197,94,0.12)',
-          color: '#22c55e',
-          border: '1px solid rgba(34,197,94,0.25)',
+          background: 'color-mix(in srgb, var(--primary) 12%, transparent)',
+          color: 'var(--primary)',
+          border: '1px solid color-mix(in srgb, var(--primary) 25%, transparent)',
         }}
       >
         {savingsPct}
@@ -37,9 +37,9 @@ export function IconCard({ icon, name, spec, priceRange, savingsPct }: IconCardP
           width: 48,
           height: 48,
           borderRadius: 12,
-          background: 'rgba(34,197,94,0.10)',
-          border: '1px solid rgba(34,197,94,0.20)',
-          color: '#22c55e',
+          background: 'color-mix(in srgb, var(--primary) 10%, transparent)',
+          border: '1px solid color-mix(in srgb, var(--primary) 20%, transparent)',
+          color: 'var(--primary)',
           flexShrink: 0,
         }}
       >
@@ -47,14 +47,14 @@ export function IconCard({ icon, name, spec, priceRange, savingsPct }: IconCardP
       </div>
 
       <div>
-        <p className="font-semibold text-sm" style={{ color: '#e2e2e6' }}>{name}</p>
-        <p className="text-xs mt-0.5" style={{ color: '#8e9099' }}>{spec}</p>
+        <p className="font-semibold text-sm text-fg">{name}</p>
+        <p className="text-xs mt-0.5 text-subtle">{spec}</p>
       </div>
 
-      <span className="mono text-sm font-semibold" style={{ color: '#22c55e' }}>
+      <span className="mono text-sm font-semibold text-primary">
         {priceRange}
       </span>
-      <span className="text-xs" style={{ color: '#44474e' }}>price range across states</span>
+      <span className="text-xs text-subtle/60">price range across states</span>
     </motion.div>
   )
 }

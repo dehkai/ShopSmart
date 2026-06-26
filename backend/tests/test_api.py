@@ -117,3 +117,20 @@ def test_search_items_filtered(mock_fetch_db_items, mock_db_file, client):
     data_trim = response_trim.json()
     assert len(data_trim) == 1
     assert data_trim[0]["item_name"] == "Minyak Masak"
+
+
+@patch("app.DB_FILE")
+@patch("src.optimizer.get_item_prices_list")
+def test_get_item_prices(mock_get_prices, mock_db_file, client):
+    mock_db_file.exists.return_value = True
+    mock_get_prices.return_value = [
+        {"premise_code": 10, "premise": "Store A", "state": "Selangor", "price": 4.5, "address": "Addr A"}
+    ]
+
+    response = client.get("/items/123/prices?state=Selangor")
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["premise"] == "Store A"
+    assert data[0]["price"] == 4.5
+

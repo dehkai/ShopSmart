@@ -43,22 +43,24 @@ export function SummaryStats({
       
       {/* ── Best Total Card ─────────────────────────────────────────────────── */}
       <div className="glass-card p-6 rounded-xl flex flex-col justify-between h-40">
-        <div className="text-[10px] font-bold uppercase tracking-widest text-[#bccbb9]">
+        <div className="text-[10px] font-bold uppercase tracking-widest text-muted">
           Best Total
         </div>
-        <div className={`font-mono text-3xl font-extrabold my-auto ${isSingleStore ? 'text-[#22c55e]' : 'text-[#facc15]'}`}>
-          RM {total.toFixed(2)}
+        <div className={`font-mono text-3xl font-extrabold my-auto ${matchedCount === 0 ? 'text-muted/40' : isSingleStore ? 'text-primary' : 'text-warning'}`}>
+          {matchedCount === 0 ? '—' : `RM ${total.toFixed(2)}`}
         </div>
-        <div className="text-xs text-[#bccbb9]/80 flex items-center gap-1">
-          {isSingleStore ? (
+        <div className="text-xs text-muted/80 flex items-center gap-1">
+          {matchedCount === 0 ? (
+            <span className="text-muted/40">No items priced</span>
+          ) : isSingleStore ? (
             <>
-              <MapPin size={12} className="text-[#22c55e]" />
+              <MapPin size={12} className="text-primary" />
               <span>{displayState ?? 'Malaysia'}</span>
             </>
           ) : (
             <>
-              <AlertTriangle size={12} className="text-[#facc15]" />
-              <span className="text-[#facc15]/80">
+              <AlertTriangle size={12} className="text-warning" />
+              <span className="text-warning/80">
                 {bestStoreItemsCovered != null ? `${bestStoreItemsCovered}/${matchedCount} items at one store` : 'Split across stores'}
               </span>
             </>
@@ -68,27 +70,27 @@ export function SummaryStats({
 
       {/* ── You Save Card ───────────────────────────────────────────────────── */}
       <div className="glass-card p-6 rounded-xl flex flex-col justify-between h-40">
-        <div className="text-[10px] font-bold uppercase tracking-widest text-[#bccbb9]">
+        <div className="text-[10px] font-bold uppercase tracking-widest text-muted">
           You Save
         </div>
-        <div className="font-mono text-3xl font-extrabold text-[#22c55e] my-auto flex items-center gap-2">
+        <div className="font-mono text-3xl font-extrabold text-primary my-auto flex items-center gap-2">
           {savings > 0 ? `RM ${savings.toFixed(2)}` : '—'}
-          {savings > 0 && <TrendingUp size={20} className="text-[#22c55e]" />}
+          {savings > 0 && <TrendingUp size={20} className="text-primary" />}
         </div>
-        <div className="text-xs text-[#bccbb9]/60">
+        <div className="text-xs text-muted/60">
           {selectedState ? `vs avg in ${selectedState}` : 'vs regional average'}
         </div>
       </div>
 
       {/* ── Items Matched Card ───────────────────────────────────────────────── */}
       <div className="glass-card p-6 rounded-xl flex flex-col justify-between h-40">
-        <div className="text-[10px] font-bold uppercase tracking-widest text-[#bccbb9]">
+        <div className="text-[10px] font-bold uppercase tracking-widest text-muted">
           Items Matched
         </div>
-        <div className="font-mono text-3xl font-extrabold text-[#dee1f7] my-auto">
+        <div className="font-mono text-3xl font-extrabold text-fg my-auto">
           {matchedCount}/{totalItems}
         </div>
-        <div className={`text-xs flex items-center gap-1 ${displayUnresolved > 0 ? 'text-[#ffb5ab]' : 'text-[#22c55e]'}`}>
+        <div className={`text-xs flex items-center gap-1 ${displayUnresolved > 0 ? 'text-error' : 'text-primary'}`}>
           {displayUnresolved > 0 ? (
             <>
               <AlertTriangle size={12} />
@@ -104,15 +106,15 @@ export function SummaryStats({
       </div>
 
       {/* ── Best Store Card ─────────────────────────────────────────────────── */}
-      <div 
-        className="glass-card p-6 rounded-xl flex flex-col justify-between h-40 group relative overflow-hidden transition-all duration-300 hover:border-[#22c55e]/30 hover:shadow-lg hover:shadow-[#22c55e]/5"
+      <div
+        className="glass-card p-6 rounded-xl flex flex-col justify-between h-40 group relative overflow-hidden transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5"
         title={cheapestPremiseAddress ?? undefined}
       >
         {/* Subtle glowing ambient gradient behind card on hover */}
-        <div className="absolute -inset-px bg-gradient-to-r from-[#22c55e]/0 via-[#22c55e]/5 to-[#60a5fa]/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl pointer-events-none" />
+        <div className="absolute -inset-px bg-gradient-to-r from-primary/0 via-primary/5 to-secondary/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl pointer-events-none" />
 
         <div className="flex justify-between items-start z-10">
-          <div className="text-[10px] font-bold uppercase tracking-widest text-[#bccbb9]">
+          <div className="text-[10px] font-bold uppercase tracking-widest text-muted">
             Best Store
           </div>
           {cheapestPremise && cheapestPremiseAddress && (
@@ -123,18 +125,32 @@ export function SummaryStats({
               target="_blank"
               rel="noopener noreferrer"
               title={`Directions to ${cheapestPremiseAddress}`}
-              className="text-[#bccbb9] hover:text-[#22c55e] transition-all p-1.5 -m-1.5 rounded-lg hover:bg-white/5 active:scale-90 transform duration-150 cursor-pointer"
+              className="text-muted hover:text-primary transition-all p-1.5 -m-1.5 rounded-lg hover:bg-overlay-sm active:scale-90 transform duration-150 cursor-pointer"
             >
               <Navigation size={13} className="group-hover:rotate-45 transition-transform duration-300" />
             </a>
           )}
         </div>
 
-        <div className="z-10 text-base font-bold text-[#dee1f7] uppercase tracking-tight my-auto line-clamp-2 leading-tight group-hover:text-[#22c55e] transition-colors duration-300">
-          {cheapestPremise ?? '—'}
-        </div>
+        {cheapestPremise && cheapestPremiseAddress ? (
+          <a
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+              `${cheapestPremise}, ${cheapestPremiseAddress}`
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={`Directions to ${cheapestPremiseAddress}`}
+            className="z-10 text-base font-bold text-fg uppercase tracking-tight my-auto line-clamp-2 leading-tight hover:text-primary transition-colors duration-300 cursor-pointer"
+          >
+            {cheapestPremise}
+          </a>
+        ) : (
+          <div className="z-10 text-base font-bold text-fg uppercase tracking-tight my-auto line-clamp-2 leading-tight">
+            {cheapestPremise ?? '—'}
+          </div>
+        )}
 
-        <div className="z-10 flex justify-between items-end text-xs text-[#bccbb9]/60">
+        <div className="z-10 flex justify-between items-end text-xs text-muted/60">
           <div>{displayState ? `${displayState}` : 'Malaysia'}</div>
           {cheapestPremise && cheapestPremiseAddress && (
             <a
@@ -144,7 +160,7 @@ export function SummaryStats({
               target="_blank"
               rel="noopener noreferrer"
               title={`Directions to ${cheapestPremiseAddress}`}
-              className="text-[10px] font-semibold text-[#22c55e] hover:underline flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-1 group-hover:translate-y-0 cursor-pointer"
+              className="text-[10px] font-semibold text-primary hover:underline flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-1 group-hover:translate-y-0 cursor-pointer"
             >
               <span>Directions</span>
               <span className="text-xs">→</span>

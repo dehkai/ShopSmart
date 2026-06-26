@@ -72,10 +72,10 @@ export function ResultsSection({
         className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 select-none"
       >
         <div className="space-y-2">
-          <h1 className="font-sans text-3xl font-extrabold text-[#22c55e] tracking-tight">
+          <h1 className="font-sans text-3xl font-extrabold text-primary tracking-tight">
             Price Optimization
           </h1>
-          <p className="text-[#bccbb9] text-sm">
+          <p className="text-muted text-sm">
             Based on your basket of {totalItems} item{totalItems !== 1 ? 's' : ''} across Malaysia&apos;s retailers.
           </p>
         </div>
@@ -83,7 +83,7 @@ export function ResultsSection({
         <button
           onClick={onReset}
           type="button"
-          className="shimmer flex items-center gap-2 px-6 py-2.5 bg-[#22c55e] text-[#0e1322] rounded-xl font-bold shadow-lg shadow-[#22c55e]/20 active:scale-95 transition-all text-xs uppercase tracking-wider cursor-pointer self-start md:self-auto shrink-0"
+          className="shimmer flex items-center gap-2 px-6 py-2.5 bg-primary text-on-primary rounded-xl font-bold shadow-lg shadow-primary/20 active:scale-95 transition-all text-xs uppercase tracking-wider cursor-pointer self-start md:self-auto shrink-0"
         >
           <span>New Intelligence Search</span>
           <Search size={14} />
@@ -93,7 +93,7 @@ export function ResultsSection({
       {result.is_fuzzy_fallback && (
         <motion.div
           variants={childVariants}
-          className="relative overflow-hidden glass-card border border-amber-500/20 bg-amber-500/5 rounded-2xl p-5 md:p-6 flex flex-col sm:flex-row items-start gap-4 shadow-xl select-none"
+          className="relative overflow-hidden glass-card border border-amber-500/20 bg-amber-500/5 rounded-2xl p-5 md:p-6 flex flex-col sm:flex-row items-start gap-4 select-none"
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
 
@@ -107,7 +107,7 @@ export function ResultsSection({
                 <h3 className="text-amber-300 font-bold text-base tracking-tight flex items-center gap-2">
                   Some Items Used Text Search
                 </h3>
-                <p className="text-[#bccbb9]/80 text-sm leading-relaxed">
+                <p className="text-muted/80 text-sm leading-relaxed">
                   AI matching wasn&apos;t confident for all items. Check the match list below for details.
                 </p>
               </>
@@ -116,11 +116,11 @@ export function ResultsSection({
                 <h3 className="text-amber-300 font-bold text-base tracking-tight flex items-center gap-2">
                   AI Matcher Unavailable
                 </h3>
-                <p className="text-[#bccbb9]/80 text-sm leading-relaxed">
+                <p className="text-muted/80 text-sm leading-relaxed">
                   Couldn&apos;t connect to the AI model — all items matched using text search fallback.
                 </p>
                 {result.error && (
-                  <div className="mt-3 p-3 bg-black/40 rounded-lg border border-white/5 font-mono text-xs text-[#dee1f7]/70 break-words leading-normal max-w-full">
+                  <div className="mt-3 p-3 bg-surface-dim/60 rounded-lg border border-border font-mono text-xs text-fg/70 break-words leading-normal max-w-full">
                     <span className="font-semibold text-amber-400/90 block mb-1 uppercase tracking-wider text-[10px]">Model Error</span>
                     {result.error}
                   </div>

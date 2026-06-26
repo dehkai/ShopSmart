@@ -50,12 +50,12 @@ export function BasketInput({
       <div className="flex items-center justify-between">
         <label
           htmlFor="basket-input"
-          className="text-[12px] font-semibold uppercase tracking-wider"
-          style={{ color: '#8e9099', letterSpacing: '0.1em' }}
+          className="text-[12px] font-semibold uppercase tracking-wider text-subtle"
+          style={{ letterSpacing: '0.1em' }}
         >
           Your shopping list
         </label>
-        <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#22c55e', letterSpacing: '0.05em' }}>
+        <span className="text-xs font-semibold uppercase tracking-wider text-primary" style={{ letterSpacing: '0.05em' }}>
           {lineCount > 0 ? `${lineCount} item${lineCount !== 1 ? 's' : ''}` : 'one item per line'}
         </span>
       </div>
@@ -68,13 +68,13 @@ export function BasketInput({
         placeholder={PLACEHOLDER}
         disabled={loading}
         rows={8}
-        className="w-full h-48 lg:h-[clamp(6rem,16vh,18rem)] bg-[#090e1c]/50 border border-white/10 rounded-xl p-4 lg:p-4 font-mono text-[#22c55e] focus:ring-1 focus:ring-[#22c55e] focus:border-[#22c55e] outline-none transition-all placeholder:text-[#8e9099]/30 resize-none text-sm leading-relaxed"
+        className="w-full h-48 lg:h-[clamp(6rem,16vh,18rem)] bg-surface-dim/50 border border-border rounded-xl p-4 lg:p-4 font-mono text-primary focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all placeholder:text-subtle/30 resize-none text-sm leading-relaxed"
         spellCheck={false}
         aria-label="Enter grocery items, one per line"
       />
 
       {error && (
-        <p role="alert" className="text-xs text-[#ffb4ab] flex items-center gap-1.5">
+        <p role="alert" className="text-xs text-error flex items-center gap-1.5">
           <span aria-hidden>⚠</span>
           {error}
         </p>
@@ -85,7 +85,7 @@ export function BasketInput({
         size="lg"
         loading={loading}
         onClick={onSubmit}
-        className="shimmer w-full bg-gradient-to-r from-[#22c55e] to-[#22c55e]/80 text-[#0e1322] font-bold text-sm py-4 rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-all active:scale-[0.98]"
+        className="shimmer w-full bg-gradient-to-r from-primary to-primary/80 text-on-primary font-bold text-sm py-4 rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-all active:scale-[0.98]"
         aria-busy={loading}
       >
         {loading ? 'Optimizing Basket…' : (
@@ -96,7 +96,7 @@ export function BasketInput({
         )}
       </Button>
 
-      <p className="text-xs text-center" style={{ color: '#8e9099' }}>
+      <p className="text-xs text-center text-subtle">
         {shortcutText} to submit · Malay or English accepted
       </p>
     </div>

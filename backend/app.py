@@ -85,3 +85,19 @@ def search_items(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database search failed: {str(e)}")
+
+
+@app.get("/items/{item_code}/prices")
+def get_item_prices(
+    item_code: int,
+    state: str | None = Query(None, description="Filter prices by state"),
+):
+    try:
+        from src.optimizer import get_item_prices_list
+        prices = get_item_prices_list(item_code, str(DB_FILE), state=state)
+        return prices
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to fetch item prices: {str(e)}"
+        )
+

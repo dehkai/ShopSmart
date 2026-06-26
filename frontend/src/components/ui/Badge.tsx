@@ -11,7 +11,7 @@ interface BadgeProps {
 function confidenceStyle(v: number): { className: string; label: string } {
   if (v >= CONFIDENCE_THRESHOLD_HIGH) {
     return {
-      className: 'bg-[#22c55e]/10 text-[#22c55e] border border-[#22c55e]/30',
+      className: 'bg-primary/10 text-primary border border-primary/30',
       label: 'High',
     }
   }
@@ -22,7 +22,7 @@ function confidenceStyle(v: number): { className: string; label: string } {
     }
   }
   return {
-    className: 'bg-[#ffb4ab]/10 text-[#ffb4ab] border border-[#ffb4ab]/30',
+    className: 'bg-error/10 text-error border border-error/30',
     label: 'None',
   }
 }
@@ -32,7 +32,7 @@ export function Badge({ variant, value, label }: BadgeProps) {
 
   if (variant === 'resolved') {
     return (
-      <span className={`${base} bg-[#22c55e]/10 text-[#22c55e] border border-[#22c55e]/30`}>
+      <span className={`${base} bg-primary/10 text-primary border border-primary/30`}>
         {label ?? 'Matched'}
       </span>
     )
@@ -40,7 +40,7 @@ export function Badge({ variant, value, label }: BadgeProps) {
 
   if (variant === 'unresolved') {
     return (
-      <span className={`${base} bg-[#ffb4ab]/10 text-[#ffb4ab] border border-[#ffb4ab]/30`}>
+      <span className={`${base} bg-error/10 text-error border border-error/30`}>
         {label ?? 'Not Found'}
       </span>
     )

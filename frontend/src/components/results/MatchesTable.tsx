@@ -12,7 +12,7 @@ interface MatchesTableProps {
 function getConfidenceBadge(confidence: number) {
   if (confidence >= CONFIDENCE_THRESHOLD_HIGH) {
     return (
-      <span className="px-3 py-1 bg-[#22c55e]/15 border border-[#22c55e]/30 text-[#22c55e] text-[10px] font-bold rounded-full uppercase tracking-wider">
+      <span className="px-3 py-1 bg-primary/15 border border-primary/30 text-primary text-[10px] font-bold rounded-full uppercase tracking-wider">
         High
       </span>
     )
@@ -38,10 +38,10 @@ export function MatchesTable({ matches, unresolved }: MatchesTableProps) {
   return (
     <div className="glass-card p-6 rounded-xl flex flex-col">
       <div className="mb-6">
-        <h3 className="text-sm font-semibold uppercase tracking-widest text-[#bccbb9] mb-1">
+        <h3 className="text-sm font-semibold uppercase tracking-widest text-muted mb-1">
           Intelligence Match
         </h3>
-        <p className="text-xs text-[#bccbb9]/60">
+        <p className="text-xs text-muted/60">
           Matching your list to PriceCatcher database items
         </p>
       </div>
@@ -51,13 +51,13 @@ export function MatchesTable({ matches, unresolved }: MatchesTableProps) {
         {matches.map((match, idx) => (
           <div
             key={`match-${idx}`}
-            className="flex justify-between items-center p-3 border-b border-white/5 last:border-0"
+            className="flex justify-between items-center p-3 border-b border-border/30 last:border-0"
           >
             <div className="min-w-0 flex-1 pr-4">
-              <div className="text-xs font-bold truncate text-[#dee1f7]" title={match.query}>
+              <div className="text-xs font-bold truncate text-fg" title={match.query}>
                 {match.query}
               </div>
-              <div className="text-[11px] text-[#bccbb9]/60 truncate mt-0.5" title={match.item_name ?? ''}>
+              <div className="text-[11px] text-muted/60 truncate mt-0.5" title={match.item_name ?? ''}>
                 {match.item_name ? `Matched: ${match.item_name}` : 'No match found'}
               </div>
               {!match.resolved && match.item_name && (
@@ -70,7 +70,7 @@ export function MatchesTable({ matches, unresolved }: MatchesTableProps) {
 
             <div className="shrink-0 flex items-center gap-2">
               {match.resolved && match.match_type === 'fuzzy' && (
-                <span className="px-3 py-1 bg-white/5 border border-white/10 text-[#bccbb9]/50 text-[10px] font-bold rounded-full uppercase tracking-wider">
+                <span className="px-3 py-1 bg-overlay-sm border border-border text-muted/50 text-[10px] font-bold rounded-full uppercase tracking-wider">
                   Text
                 </span>
               )}
@@ -93,13 +93,13 @@ export function MatchesTable({ matches, unresolved }: MatchesTableProps) {
         {unresolved.filter((q) => !matchedQueries.has(q)).map((q, idx) => (
           <div
             key={`unresolved-${idx}`}
-            className="flex justify-between items-center p-3 border-2 border-dashed border-white/10 rounded-xl bg-white/[0.02]"
+            className="flex justify-between items-center p-3 border-2 border-dashed border-border rounded-xl bg-overlay-xs"
           >
             <div className="min-w-0 flex-1 pr-4">
-              <div className="text-xs font-bold text-[#dee1f7]/70 italic truncate">
+              <div className="text-xs font-bold text-fg/70 italic truncate">
                 {q}
               </div>
-              <div className="text-[11px] text-[#ffb5ab] flex items-center gap-1 mt-0.5">
+              <div className="text-[11px] text-error flex items-center gap-1 mt-0.5">
                 <AlertTriangle size={10} />
                 <span>No price data found</span>
               </div>
@@ -107,7 +107,7 @@ export function MatchesTable({ matches, unresolved }: MatchesTableProps) {
 
             <button
               type="button"
-              className="shrink-0 px-3 py-1 text-[#bccbb9] hover:text-[#22c55e] transition-colors flex items-center gap-1 font-bold text-[10px] tracking-wider uppercase"
+              className="shrink-0 px-3 py-1 text-muted hover:text-primary transition-colors flex items-center gap-1 font-bold text-[10px] tracking-wider uppercase"
             >
               <Edit size={10} />
               <span>Edit</span>

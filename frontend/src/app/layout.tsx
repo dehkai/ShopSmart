@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
+import { Providers } from './providers'
 
 const geist = Geist({
   subsets: ['latin'],
@@ -20,10 +21,27 @@ const jetbrainsMono = JetBrains_Mono({
   weight: ['400', '500'],
 })
 
+import type { Viewport } from 'next'
+import { RegisterServiceWorker } from '@/components/RegisterServiceWorker'
+
+export const viewport: Viewport = {
+  themeColor: '#0e1322',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+}
+
 export const metadata: Metadata = {
   title: 'ShopSmart — Malaysia Grocery Basket Optimizer',
   description:
     'Find the cheapest grocery basket across Malaysian stores using PriceCatcher data.',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'ShopSmart',
+  },
 }
 
 export default function RootLayout({
@@ -32,17 +50,18 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geist.variable} ${geistMono.variable} ${jetbrainsMono.variable} antialiased`}
         style={{
           fontFamily: 'var(--font-geist), ui-sans-serif, system-ui, sans-serif',
-          backgroundColor: '#0e1322',
-          color: '#e2e2e6',
           minHeight: '100vh',
         }}
       >
-        {children}
+        <Providers>
+          <RegisterServiceWorker />
+          {children}
+        </Providers>
       </body>
     </html>
   )

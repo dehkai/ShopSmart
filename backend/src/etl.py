@@ -14,7 +14,15 @@ def extract_data():
     # read the 3 parquet files (data/raw/*.parquet) into pandas dataframes
     items_df = pd.read_parquet(raw_data_dir / "lookup_item.parquet")
     premises_df = pd.read_parquet(raw_data_dir / "lookup_premise.parquet")
-    prices_df = pd.read_parquet(raw_data_dir / "pricecatcher_2026-05.parquet")
+    
+    # Dynamically find the latest pricecatcher parquet file
+    price_files = list(raw_data_dir.glob("pricecatcher_*.parquet"))
+    if not price_files:
+        raise FileNotFoundError(f"No pricecatcher_*.parquet files found in {raw_data_dir}")
+    
+    latest_price_file = sorted(price_files)[-1]
+    print(f"Reading prices from: {latest_price_file.name}")
+    prices_df = pd.read_parquet(latest_price_file)
 
     print(
         f"Loaded {len(items_df)} items, {len(premises_df)} premises, and {len(prices_df)} price records."

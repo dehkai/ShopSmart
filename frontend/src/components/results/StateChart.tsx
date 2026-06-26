@@ -26,10 +26,10 @@ function StateMode({ stateRanking, nationalAverage }: { stateRanking: StateRanki
     <div className="glass-card p-8 rounded-xl flex flex-col">
       <div className="flex justify-between items-start mb-8">
         <div>
-          <h3 className="text-sm font-semibold uppercase tracking-widest text-[#bccbb9] mb-1">
+          <h3 className="text-sm font-semibold uppercase tracking-widest text-muted mb-1">
             Total Basket Cost by State
           </h3>
-          <p className="text-xs text-[#bccbb9]/60">Cheapest single store per state, top 5</p>
+          <p className="text-xs text-muted/60">Cheapest single store per state, top 5</p>
         </div>
       </div>
 
@@ -40,26 +40,26 @@ function StateMode({ stateRanking, nationalAverage }: { stateRanking: StateRanki
 
           return (
             <div key={row.state} className="flex items-center gap-4">
-              <div className="w-28 text-right text-xs font-semibold text-[#dee1f7]">
+              <div className="w-28 text-right text-xs font-semibold text-fg">
                 {row.state}
               </div>
-              <div className="flex-grow h-6 bg-white/5 rounded-full relative overflow-hidden">
+              <div className="flex-grow h-6 rounded-full relative overflow-hidden" style={{ background: 'var(--overlay-sm)' }}>
                 {nationalAverage && nationalAverage > 0 && (
                   <div
-                    className="absolute top-0 h-full w-0.5 border-l-2 border-dashed border-[#facc15]/50 z-10"
+                    className="absolute top-0 h-full w-0.5 border-l-2 border-dashed border-warning/50 z-10"
                     style={{ left: `${(nationalAverage / scaleMax) * 100}%` }}
                   />
                 )}
                 <div
                   className={`bar-grow absolute h-full rounded-full transition-all duration-1000 ${isCheapest
-                      ? 'bg-[#22c55e] shadow-[0_0_12px_rgba(34,197,94,0.4)]'
-                      : 'bg-white/15'
+                      ? 'bg-primary shadow-[0_0_12px_rgba(34,197,94,0.4)]'
+                      : 'bg-overlay-lg'
                     }`}
                   style={{ width: `${barWidth}%`, animationDelay: `${idx * 0.1}s` }}
                 />
               </div>
               <div
-                className={`w-20 text-xs font-bold font-mono text-right ${isCheapest ? 'text-[#22c55e]' : 'text-[#bccbb9]'
+                className={`w-20 text-xs font-bold font-mono text-right ${isCheapest ? 'text-primary' : 'text-muted'
                   }`}
               >
                 RM {row.total.toFixed(2)}
@@ -70,16 +70,16 @@ function StateMode({ stateRanking, nationalAverage }: { stateRanking: StateRanki
 
         {nationalAverage && nationalAverage > 0 && (
           <div className="flex items-center gap-4 opacity-60">
-            <div className="w-28 text-right text-[10px] font-semibold text-[#facc15] uppercase tracking-wide">
+            <div className="w-28 text-right text-[10px] font-semibold text-warning uppercase tracking-wide">
               National Avg
             </div>
-            <div className="flex-grow h-6 bg-white/5 rounded-full relative overflow-hidden">
+            <div className="flex-grow h-6 rounded-full relative overflow-hidden" style={{ background: 'var(--overlay-sm)' }}>
               <div
-                className="absolute h-full rounded-full border-2 border-dashed border-[#facc15]/60 bg-transparent"
+                className="absolute h-full rounded-full border-2 border-dashed border-warning/60 bg-transparent"
                 style={{ width: `${(nationalAverage / scaleMax) * 100}%` }}
               />
             </div>
-            <div className="w-20 text-xs font-bold font-mono text-right text-[#facc15]">
+            <div className="w-20 text-xs font-bold font-mono text-right text-warning">
               RM {nationalAverage.toFixed(2)}
             </div>
           </div>
@@ -105,7 +105,7 @@ function StoreMode({
   if (storeRanking.length === 0) {
     return (
       <div className="glass-card p-8 rounded-xl flex flex-col justify-center items-center gap-3 min-h-[220px]">
-        <p className="text-sm text-[#bccbb9]/60">No stores found in {selectedState} for this basket.</p>
+        <p className="text-sm text-muted/60">No stores found in {selectedState} for this basket.</p>
       </div>
     )
   }
@@ -123,10 +123,10 @@ function StoreMode({
     <div className="glass-card p-8 rounded-xl flex flex-col">
       <div className="flex justify-between items-start mb-8">
         <div>
-          <h3 className="text-sm font-semibold uppercase tracking-widest text-[#bccbb9] mb-1">
+          <h3 className="text-sm font-semibold uppercase tracking-widest text-muted mb-1">
             Cheapest Stores in {selectedState}
           </h3>
-          <p className="text-xs text-[#bccbb9]/60">
+          <p className="text-xs text-muted/60">
             Top {storeRanking.length} store{storeRanking.length !== 1 ? 's' : ''} for your basket
           </p>
         </div>
@@ -141,35 +141,51 @@ function StoreMode({
           return (
             <div key={row.premise_code} className="flex items-center gap-4">
               <div className="w-28 text-right flex flex-col items-end">
-                <span className={`text-xs leading-tight line-clamp-2 ${isBest ? 'font-extrabold text-white' : 'font-semibold text-[#dee1f7]'}`}>
-                  {row.premise}
-                </span>
+                {row.address ? (
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                      `${row.premise}, ${row.address}`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`text-xs leading-tight line-clamp-2 hover:text-primary transition-colors cursor-pointer ${
+                      isBest ? 'font-extrabold text-fg' : 'font-semibold text-fg'
+                    }`}
+                    title={`Directions to ${row.premise}`}
+                  >
+                    {row.premise}
+                  </a>
+                ) : (
+                  <span className={`text-xs leading-tight line-clamp-2 ${isBest ? 'font-extrabold text-fg' : 'font-semibold text-fg'}`}>
+                    {row.premise}
+                  </span>
+                )}
                 {hasPartialStock && (
-                  <span className="text-[10px] text-[#ffb5ab]/70">
+                  <span className="text-[10px] text-error/70">
                     {row.items_found}/{itemCount} items
                   </span>
                 )}
               </div>
 
-              <div className="flex-grow h-6 bg-white/5 rounded-full relative overflow-hidden">
+              <div className="flex-grow h-6 rounded-full relative overflow-hidden" style={{ background: 'var(--overlay-sm)' }}>
                 {/* State average reference line */}
                 {averageTotal && (
                   <div
-                    className="absolute top-0 h-full w-0.5 border-l-2 border-dashed border-[#facc15]/50 z-10"
+                    className="absolute top-0 h-full w-0.5 border-l-2 border-dashed border-warning/50 z-10"
                     style={{ left: `${(averageTotal / scaleMax) * 100}%` }}
                   />
                 )}
                 <div
                   className={`bar-grow absolute h-full rounded-full transition-all duration-1000 ${isBest
-                      ? 'bg-[#22c55e] shadow-[0_0_12px_rgba(34,197,94,0.4)]'
-                      : 'bg-white/15'
+                      ? 'bg-primary shadow-[0_0_12px_rgba(34,197,94,0.4)]'
+                      : 'bg-overlay-lg'
                     }`}
                   style={{ width: `${barWidth}%`, animationDelay: `${idx * 0.1}s` }}
                 />
               </div>
 
               <div
-                className={`w-20 font-mono text-right ${isBest ? 'text-sm font-extrabold text-[#22c55e]' : 'text-xs font-bold text-[#bccbb9]'}`}
+                className={`w-20 font-mono text-right ${isBest ? 'text-sm font-extrabold text-primary' : 'text-xs font-bold text-muted'}`}
               >
                 RM {row.total.toFixed(2)}
               </div>
@@ -180,23 +196,23 @@ function StoreMode({
         {/* State average row */}
         {averageTotal && (
           <div className="flex items-center gap-4 opacity-60">
-            <div className="w-28 text-right text-[10px] font-semibold text-[#facc15] uppercase tracking-wide">
+            <div className="w-28 text-right text-[10px] font-semibold text-warning uppercase tracking-wide">
               State Avg
             </div>
-            <div className="flex-grow h-6 bg-white/5 rounded-full relative overflow-hidden">
+            <div className="flex-grow h-6 rounded-full relative overflow-hidden" style={{ background: 'var(--overlay-sm)' }}>
               <div
-                className="absolute h-full rounded-full border-2 border-dashed border-[#facc15]/60 bg-transparent"
+                className="absolute h-full rounded-full border-2 border-dashed border-warning/60 bg-transparent"
                 style={{ width: `${(averageTotal / scaleMax) * 100}%` }}
               />
             </div>
-            <div className="w-20 text-xs font-bold font-mono text-right text-[#facc15]">
+            <div className="w-20 text-xs font-bold font-mono text-right text-warning">
               RM {averageTotal.toFixed(2)}
             </div>
           </div>
         )}
 
         {savings !== null && savings > 0 && (
-          <p className="text-xs text-[#22c55e]/70 mt-1">
+          <p className="text-xs text-primary/70 mt-1">
             💡 {storeRanking[0].premise} saves RM {savings.toFixed(2)} vs state average
           </p>
         )}
@@ -234,7 +250,13 @@ export function StateChart({
     )
   }
 
-  if (!stateRanking || stateRanking.length === 0) return null
+  if (!stateRanking || stateRanking.length === 0) {
+    return (
+      <div className="glass-card p-8 rounded-xl flex flex-col justify-center items-center gap-3 min-h-[220px]">
+        <p className="text-sm text-muted/60">No pricing data available — no items were matched.</p>
+      </div>
+    )
+  }
 
   return <StateMode stateRanking={stateRanking} nationalAverage={nationalAverage} />
 }

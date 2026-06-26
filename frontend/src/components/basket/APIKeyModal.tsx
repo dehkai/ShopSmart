@@ -1,16 +1,18 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { motion } from 'framer-motion'
 import { Eye, EyeOff, Key, HelpCircle, X } from 'lucide-react'
 
 interface APIKeyModalProps {
-  isOpen: boolean
   onClose: () => void
   onSave: (provider: 'gemini', model: string, apiKey: string) => void
   initialProvider?: 'gemini'
   initialModel?: string
   initialApiKey?: string
 }
+
+const MODAL_EASE = [0.23, 1, 0.32, 1] as const
 
 const PROVIDERS = {
   gemini: {
@@ -29,41 +31,19 @@ const PROVIDERS = {
 } as const
 
 export function APIKeyModal({
-  isOpen,
   onClose,
   onSave,
   initialProvider = 'gemini',
   initialModel,
   initialApiKey = '',
 }: APIKeyModalProps) {
-  const [provider, setProvider] = useState<'gemini'>(initialProvider ?? 'gemini')
-  const [model, setModel] = useState<string>('')
+  const [provider] = useState<'gemini'>(initialProvider ?? 'gemini')
+  const [model, setModel] = useState<string>(
+    initialModel || PROVIDERS[initialProvider ?? 'gemini'].defaultModel
+  )
   const [apiKey, setApiKey] = useState<string>(initialApiKey)
   const [showKey, setShowKey] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
-
-  // Update selection when initial values change or modal opens
-  useEffect(() => {
-    if (isOpen) {
-      setProvider(initialProvider)
-      setApiKey(initialApiKey)
-      setModel(initialModel || PROVIDERS[initialProvider].defaultModel)
-      setError(null)
-    }
-  }, [isOpen, initialProvider, initialModel, initialApiKey])
-
-  // Update default model when provider changes
-  const handleProviderChange = (prov: 'gemini') => {
-    setProvider(prov)
-    setModel(PROVIDERS[prov].defaultModel)
-    if (typeof window !== 'undefined') {
-      const storedKey = localStorage.getItem(`shopsmart_${prov}_api_key`) || ''
-      setApiKey(storedKey)
-    }
-    setError(null)
-  }
-
-  if (!isOpen) return null
 
   const handleRevoke = () => {
     setApiKey('')
@@ -83,33 +63,41 @@ export function APIKeyModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Translucent Backdrop blur */}
-      <div 
-        className="absolute inset-0 bg-black/60 backdrop-blur-md transition-opacity duration-300"
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="absolute inset-0 bg-black/60 backdrop-blur-md"
         onClick={onClose}
       />
 
       {/* Modal Container (Radius large: 24px and dark surface color #0e1322) */}
-      <div 
-        className="relative bg-[#0e1322] border border-white/10 w-full max-w-sm rounded-[24px] p-6 md:p-8 shadow-2xl shadow-black/80 z-10 flex flex-col gap-6 animate-in fade-in zoom-in-95 duration-200"
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.15 } }}
+        transition={{ duration: 0.2, ease: MODAL_EASE }}
+        className="relative bg-surface border border-border w-full max-w-sm rounded-[24px] p-6 md:p-8 shadow-2xl shadow-black/80 z-10 flex flex-col gap-6"
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
       >
         {/* Header Row */}
-        <div className="flex items-center justify-between border-b border-white/5 pb-4">
+        <div className="flex items-center justify-between border-b border-border/50 pb-4">
           <div className="flex items-center gap-2.5">
-            <Key className="text-[#22c55e] w-5 h-5 shrink-0" />
+            <Key className="text-primary w-5 h-5 shrink-0" />
             <div>
-              <h2 id="modal-title" className="text-[#dee1f7] text-sm font-bold tracking-tight">
+              <h2 id="modal-title" className="text-fg text-sm font-bold tracking-tight">
                 API Key Setup
               </h2>
-              <p className="text-[10px] text-[#bccbb9]/50 font-medium">Configure Google Gemini API key</p>
+              <p className="text-[10px] text-muted/50 font-medium">Configure Google Gemini API key</p>
             </div>
           </div>
           <button
             onClick={onClose}
             type="button"
-            className="text-[#bccbb9]/60 hover:text-white transition-colors cursor-pointer w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/5"
+            className="text-muted/60 hover:text-fg transition-colors cursor-pointer w-8 h-8 rounded-lg flex items-center justify-center hover:bg-overlay-sm"
             aria-label="Close dialog"
           >
             <X size={18} />
@@ -120,7 +108,7 @@ export function APIKeyModal({
         <div className="flex flex-col gap-5">
           {/* Model Selection */}
           <div className="flex flex-col gap-2">
-            <label htmlFor="model-select" className="text-[10px] font-bold uppercase tracking-wider text-[#bccbb9]/60">
+            <label htmlFor="model-select" className="text-[10px] font-bold uppercase tracking-wider text-muted/60">
               Select Model
             </label>
             <div className="relative w-full">
@@ -128,17 +116,17 @@ export function APIKeyModal({
                 id="model-select"
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
-                className="w-full bg-[#0a0f1c]/50 border border-white/10 hover:border-white/15 focus:border-[#22c55e] focus:bg-[#0a0f1c] focus:ring-2 focus:ring-[#22c55e]/15 text-[#dee1f7] text-xs font-semibold rounded-xl px-4 py-3 outline-none cursor-pointer appearance-none transition-all duration-300 shadow-md"
+                className="w-full bg-surface-dim/50 border border-border hover:border-border/60 focus:border-primary focus:bg-surface-dim focus:ring-2 focus:ring-primary/15 text-fg text-xs font-semibold rounded-xl px-4 py-3 outline-none cursor-pointer appearance-none transition-all duration-300 shadow-md"
               >
                 {PROVIDERS[provider].models.map((mOpt) => (
-                  <option key={mOpt} value={mOpt} className="bg-[#0e1322] text-[#dee1f7]">
+                  <option key={mOpt} value={mOpt} className="bg-surface text-fg">
                     {mOpt}
                   </option>
                 ))}
               </select>
               <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none select-none">
                 <svg
-                  className="w-4 h-4 text-[#8e9099] opacity-70"
+                  className="w-4 h-4 text-subtle opacity-70"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -158,14 +146,14 @@ export function APIKeyModal({
           {/* API Key Input */}
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <label htmlFor="api-key" className="text-[10px] font-bold uppercase tracking-wider text-[#bccbb9]/60">
+              <label htmlFor="api-key" className="text-[10px] font-bold uppercase tracking-wider text-muted/60">
                 API Key
               </label>
               <a
                 href={PROVIDERS[provider].helpUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[10px] text-[#60a5fa] hover:underline flex items-center gap-1 font-semibold"
+                className="text-[10px] text-secondary hover:underline flex items-center gap-1 font-semibold"
               >
                 <HelpCircle size={11} />
                 <span>Get Gemini Key</span>
@@ -182,12 +170,12 @@ export function APIKeyModal({
                   setError(null)
                 }}
                 placeholder="Enter your Google Gemini API key..."
-                className="w-full bg-[#0a0f1c]/50 border border-white/10 rounded-xl pl-4 pr-11 py-3 text-xs font-mono text-[#22c55e] focus:ring-2 focus:ring-[#22c55e]/15 focus:border-[#22c55e] outline-none transition-all placeholder:text-[#8e9099]/30"
+                className="w-full bg-surface-dim/50 border border-border rounded-xl pl-4 pr-11 py-3 text-xs font-mono text-primary focus:ring-2 focus:ring-primary/15 focus:border-primary outline-none transition-all placeholder:text-subtle/30"
               />
               <button
                 type="button"
                 onClick={() => setShowKey(!showKey)}
-                className="absolute inset-y-0 right-4 flex items-center text-[#bccbb9]/60 hover:text-white cursor-pointer select-none"
+                className="absolute inset-y-0 right-4 flex items-center text-muted/60 hover:text-fg cursor-pointer select-none"
                 aria-label={showKey ? 'Hide API key' : 'Show API key'}
               >
                 {showKey ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -196,7 +184,7 @@ export function APIKeyModal({
 
             {/* Helper notice and explicit revoke connection button */}
             <div className="flex justify-between items-center px-1">
-              <span className="text-[10px]" style={{ color: '#8e9099' }}>
+              <span className="text-[10px] text-subtle">
                 Stored locally on your device.
               </span>
               {apiKey && (
@@ -213,30 +201,35 @@ export function APIKeyModal({
 
           {/* Error Message */}
           {error && (
-            <div className="text-[11px] text-red-400 bg-red-950/20 border border-red-900/30 p-3 rounded-lg leading-relaxed select-none animate-in fade-in slide-in-from-top-1 duration-200">
+            <motion.div
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2, ease: MODAL_EASE }}
+              className="text-[11px] text-red-400 bg-red-950/20 border border-red-900/30 p-3 rounded-lg leading-relaxed select-none"
+            >
               {error}
-            </div>
+            </motion.div>
           )}
         </div>
 
         {/* Action Button Row */}
-        <div className="border-t border-white/5 pt-4 flex gap-3">
+        <div className="border-t border-border/50 pt-4 flex gap-3">
           <button
             onClick={onClose}
             type="button"
-            className="flex-1 py-3 px-4 border border-white/10 rounded-xl text-xs font-bold text-[#bccbb9] hover:bg-white/5 hover:text-white active:scale-95 transition-all cursor-pointer"
+            className="flex-1 py-3 px-4 border border-border rounded-xl text-xs font-bold text-muted hover:bg-overlay-sm hover:text-fg active:scale-95 transition-all cursor-pointer"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             type="button"
-            className="shimmer flex-1 py-3 px-4 bg-[#22c55e] text-[#0e1322] rounded-xl text-xs font-bold shadow-lg shadow-[#22c55e]/20 active:scale-95 transition-all cursor-pointer"
+            className="shimmer flex-1 py-3 px-4 bg-primary text-on-primary rounded-xl text-xs font-bold shadow-lg shadow-primary/20 active:scale-95 transition-all cursor-pointer"
           >
             Save & Continue
           </button>
         </div>
-      </div>
+      </motion.div>
     </div>
   )
 }

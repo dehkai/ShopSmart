@@ -6,3 +6,5 @@ data/raw/*.parquet
 .pytest_cache/
 .ruff_cache/
 .DS_Store
+*/skills/
+skills-lock.json
