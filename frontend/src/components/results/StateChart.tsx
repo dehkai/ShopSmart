@@ -141,9 +141,25 @@ function StoreMode({
           return (
             <div key={row.premise_code} className="flex items-center gap-4">
               <div className="w-28 text-right flex flex-col items-end">
-                <span className={`text-xs leading-tight line-clamp-2 ${isBest ? 'font-extrabold text-fg' : 'font-semibold text-fg'}`}>
-                  {row.premise}
-                </span>
+                {row.address ? (
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                      `${row.premise}, ${row.address}`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`text-xs leading-tight line-clamp-2 hover:text-primary transition-colors cursor-pointer ${
+                      isBest ? 'font-extrabold text-fg' : 'font-semibold text-fg'
+                    }`}
+                    title={`Directions to ${row.premise}`}
+                  >
+                    {row.premise}
+                  </a>
+                ) : (
+                  <span className={`text-xs leading-tight line-clamp-2 ${isBest ? 'font-extrabold text-fg' : 'font-semibold text-fg'}`}>
+                    {row.premise}
+                  </span>
+                )}
                 {hasPartialStock && (
                   <span className="text-[10px] text-error/70">
                     {row.items_found}/{itemCount} items

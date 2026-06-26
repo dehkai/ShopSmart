@@ -242,3 +242,18 @@ def test_optimize_with_unresolved_and_partial_database_errors(test_db):
     result_err = optimize(matches, "non_existent_db.db")
     assert result_err.error is not None
     assert "Database error" in result_err.error
+
+
+def test_top_stores_in_state_national(test_db):
+    stores = top_stores_in_state([1, 2], test_db, state=None)
+    # Store 20 total = 8.5 + 4.0 = 12.5
+    # Store 11 total = 9.0 + 4.5 = 13.5
+    # Store 10 total = 10.0 + 5.0 = 15.0
+    assert len(stores) == 3
+    assert stores[0].premise_code == 20
+    assert stores[0].total == 12.5
+    assert stores[1].premise_code == 11
+    assert stores[1].total == 13.5
+    assert stores[2].premise_code == 10
+    assert stores[2].total == 15.0
+

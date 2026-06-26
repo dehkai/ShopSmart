@@ -132,9 +132,23 @@ export function SummaryStats({
           )}
         </div>
 
-        <div className="z-10 text-base font-bold text-fg uppercase tracking-tight my-auto line-clamp-2 leading-tight group-hover:text-primary transition-colors duration-300">
-          {cheapestPremise ?? '—'}
-        </div>
+        {cheapestPremise && cheapestPremiseAddress ? (
+          <a
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+              `${cheapestPremise}, ${cheapestPremiseAddress}`
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={`Directions to ${cheapestPremiseAddress}`}
+            className="z-10 text-base font-bold text-fg uppercase tracking-tight my-auto line-clamp-2 leading-tight hover:text-primary transition-colors duration-300 cursor-pointer"
+          >
+            {cheapestPremise}
+          </a>
+        ) : (
+          <div className="z-10 text-base font-bold text-fg uppercase tracking-tight my-auto line-clamp-2 leading-tight">
+            {cheapestPremise ?? '—'}
+          </div>
+        )}
 
         <div className="z-10 flex justify-between items-end text-xs text-muted/60">
           <div>{displayState ? `${displayState}` : 'Malaysia'}</div>

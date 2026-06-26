@@ -9,6 +9,8 @@
   --color-muted:        var(--muted);
   --color-subtle:       var(--subtle);
   --color-border:       var(--border-c);
+  --color-glass-border: var(--glass-border);
+  --color-glass-card-bg: var(--glass-card-bg);
   --color-primary:      var(--primary);
   --color-primary-dim:  var(--primary-dim);
   --color-on-primary:   var(--on-primary);
@@ -45,7 +47,7 @@
   --fg:           #dee1f7;
   --muted:        #bccbb9;
   --subtle:       #8e9099;
-  --border-c:     rgba(255,255,255,0.10);
+  --border-c:             color-mix(in srgb, var(--fg) 8%, transparent);
   --primary:      #22c55e;
   --primary-dim:  #16a34a;
   --on-primary:   #0e1322;
@@ -56,8 +58,8 @@
   /* Glass overlays (white-on-dark) */
   --glass-bg:             rgba(255,255,255,0.05);
   --glass-bg-hover:       rgba(255,255,255,0.08);
-  --glass-border:         rgba(255,255,255,0.10);
-  --glass-border-hover:   rgba(255,255,255,0.15);
+  --glass-border:         color-mix(in srgb, var(--fg) 8%, transparent);
+  --glass-border-hover:   color-mix(in srgb, var(--fg) 14%, transparent);
   --glass-card-bg:        rgba(255,255,255,0.03);
   --glass-shimmer:        rgba(255,255,255,0.20);
   --glass-shimmer-subtle: rgba(255,255,255,0.08);
@@ -79,7 +81,7 @@
   --fg:           #14181f;
   --muted:        #5a6472;
   --subtle:       #8a93a3;
-  --border-c:     rgba(15,23,42,0.10);
+  --border-c:             color-mix(in srgb, var(--fg) 8%, transparent);
   --primary:      #16a34a;
   --primary-dim:  #15803d;
   --on-primary:   #ffffff;
@@ -91,8 +93,8 @@
   --glass-bg:             rgba(15,23,42,0.03);
   --glass-bg-hover:       rgba(15,23,42,0.06);
   --glass-card-bg:        rgba(255, 255, 255, 0.45);
-  --glass-border:         rgba(15, 23, 42, 0.045);
-  --glass-border-hover:   rgba(15, 23, 42, 0.08);
+  --glass-border:         color-mix(in srgb, var(--fg) 4.5%, transparent);
+  --glass-border-hover:   color-mix(in srgb, var(--fg) 8%, transparent);
   --glass-shimmer:        rgba(15,23,42,0.10);
   --glass-shimmer-subtle: rgba(15,23,42,0.04);
   --overlay-xs:           rgba(15,23,42,0.02);
@@ -323,6 +325,58 @@ body::after {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* ── PWA Mobile Interactive Utilities ────────────────────────────────── */
+.pwa-list-item {
+  transition: background-color var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out);
+}
+.pwa-list-item:active {
+  transform: scale(0.98);
+  background-color: var(--glass-bg-hover);
+}
+@media (hover: hover) and (pointer: fine) {
+  .pwa-list-item:hover {
+    background-color: var(--glass-bg-hover);
+  }
+}
+
+.pwa-btn-sample {
+  transition: border-color var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out);
+}
+.pwa-btn-sample:active {
+  transform: scale(0.97);
+}
+@media (hover: hover) and (pointer: fine) {
+  .pwa-btn-sample:hover {
+    border-color: color-mix(in oklch, var(--primary) 30%, transparent);
+  }
+}
+
+.pwa-header-btn {
+  transition: background-color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out);
+}
+.pwa-header-btn:active {
+  transform: scale(0.95);
+  color: var(--fg);
+}
+@media (hover: hover) and (pointer: fine) {
+  .pwa-header-btn:hover {
+    background-color: var(--overlay-md);
+    color: var(--fg);
+  }
+}
+
+.pwa-primary-btn {
+  transition: opacity var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out);
+}
+.pwa-primary-btn:active {
+  transform: scale(0.97);
+}
+@media (hover: hover) and (pointer: fine) {
+  .pwa-primary-btn:hover {
+    opacity: 0.95;
   }
 }
 

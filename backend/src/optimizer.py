@@ -72,6 +72,47 @@ def get_item_price_at_store(
     return row[0] if row else None
 
 
+def get_item_prices_list(
+    item_code: int, db_path: str, state: str | None = None, limit: int = 5
+) -> list[dict]:
+    with sqlite3.connect(db_path) as conn:
+        if state:
+            rows = conn.execute(
+                """
+                SELECT p.premise_code, pr.premise, pr.state, p.price, pr.address
+                FROM prices p
+                JOIN premises pr ON p.premise_code = pr.premise_code
+                WHERE p.item_code = ? AND pr.state = ?
+                ORDER BY p.price ASC
+                LIMIT ?
+                """,
+                (item_code, state, limit),
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                """
+                SELECT p.premise_code, pr.premise, pr.state, p.price, pr.address
+                FROM prices p
+                JOIN premises pr ON p.premise_code = pr.premise_code
+                WHERE p.item_code = ?
+                ORDER BY p.price ASC
+                LIMIT ?
+                """,
+                (item_code, limit),
+            ).fetchall()
+
+    return [
+        {
+            "premise_code": row[0],
+            "premise": row[1],
+            "state": row[2],
+            "price": row[3],
+            "address": row[4],
+        }
+        for row in rows
+    ]
+
+
 def find_cheapest_store(
     item_codes: list[int], db_path: str, state: str | None = None
 ) -> tuple[int, float] | None:
@@ -160,27 +201,11 @@ def state_ranking(item_codes: list[int], db_path: str) -> list[StateRanking]:
 
 
 def top_stores_in_state(
-    item_codes: list[int], db_path: str, state: str, limit: int = 5
+    item_codes: list[int], db_path: str, state: str | None = None, limit: int = 5
 ) -> list[StoreRanking]:
 
     with sqlite3.connect(db_path) as conn:
-        rows = conn.execute(
-            f"""
-            SELECT pr.premise_code, pr.premise, pr.state, SUM(p.price) AS total, COUNT(DISTINCT p.item_code) AS items_found, pr.address
-            FROM prices p
-            JOIN premises pr ON p.premise_code = pr.premise_code
-            WHERE p.item_code IN ({_placeholders(len(item_codes))})
-            AND pr.state = ?
-            GROUP BY pr.premise_code, pr.premise, pr.state, pr.address
-            HAVING COUNT(DISTINCT p.item_code) = ?
-            ORDER BY total ASC
-            LIMIT ?
-            """,
-            (*item_codes, state, len(item_codes), limit),
-        ).fetchall()
-
-        # Fallback: stores with partial stock
-        if not rows:
+        if state:
             rows = conn.execute(
                 f"""
                 SELECT pr.premise_code, pr.premise, pr.state, SUM(p.price) AS total, COUNT(DISTINCT p.item_code) AS items_found, pr.address
@@ -189,11 +214,57 @@ def top_stores_in_state(
                 WHERE p.item_code IN ({_placeholders(len(item_codes))})
                 AND pr.state = ?
                 GROUP BY pr.premise_code, pr.premise, pr.state, pr.address
-                ORDER BY items_found DESC, total ASC
+                HAVING COUNT(DISTINCT p.item_code) = ?
+                ORDER BY total ASC
                 LIMIT ?
                 """,
-                (*item_codes, state, limit),
+                (*item_codes, state, len(item_codes), limit),
             ).fetchall()
+
+            # Fallback: stores with partial stock
+            if not rows:
+                rows = conn.execute(
+                    f"""
+                    SELECT pr.premise_code, pr.premise, pr.state, SUM(p.price) AS total, COUNT(DISTINCT p.item_code) AS items_found, pr.address
+                    FROM prices p
+                    JOIN premises pr ON p.premise_code = pr.premise_code
+                    WHERE p.item_code IN ({_placeholders(len(item_codes))})
+                    AND pr.state = ?
+                    GROUP BY pr.premise_code, pr.premise, pr.state, pr.address
+                    ORDER BY items_found DESC, total ASC
+                    LIMIT ?
+                    """,
+                    (*item_codes, state, limit),
+                ).fetchall()
+        else:
+            rows = conn.execute(
+                f"""
+                SELECT pr.premise_code, pr.premise, pr.state, SUM(p.price) AS total, COUNT(DISTINCT p.item_code) AS items_found, pr.address
+                FROM prices p
+                JOIN premises pr ON p.premise_code = pr.premise_code
+                WHERE p.item_code IN ({_placeholders(len(item_codes))})
+                GROUP BY pr.premise_code, pr.premise, pr.state, pr.address
+                HAVING COUNT(DISTINCT p.item_code) = ?
+                ORDER BY total ASC
+                LIMIT ?
+                """,
+                (*item_codes, len(item_codes), limit),
+            ).fetchall()
+
+            # Fallback: stores with partial stock
+            if not rows:
+                rows = conn.execute(
+                    f"""
+                    SELECT pr.premise_code, pr.premise, pr.state, SUM(p.price) AS total, COUNT(DISTINCT p.item_code) AS items_found, pr.address
+                    FROM prices p
+                    JOIN premises pr ON p.premise_code = pr.premise_code
+                    WHERE p.item_code IN ({_placeholders(len(item_codes))})
+                    GROUP BY pr.premise_code, pr.premise, pr.state, pr.address
+                    ORDER BY items_found DESC, total ASC
+                    LIMIT ?
+                    """,
+                    (*item_codes, limit),
+                ).fetchall()
 
     return [
         StoreRanking(
@@ -206,6 +277,7 @@ def top_stores_in_state(
         )
         for row in rows
     ]
+
 
 
 def _average_total(
@@ -259,9 +331,15 @@ def optimize(
         resolved.append(match)
         try:
             cheapest = find_cheapest_item(match.item_code, db_path, state=state)
-        except sqlite3.Error:
-            unresolved.append(match.query)
-            continue
+        except sqlite3.Error as e:
+            item_codes_in_items = {it.item_code for it in items}
+            unres = [m.query for m in matches if not m.resolved or m.item_code not in item_codes_in_items]
+            return BasketResult(
+                matches=matches,
+                items=items,
+                unresolved=unres,
+                error=f"Database error: {e}",
+            )
         if cheapest:
             items.append(
                 BasketItemResult(
@@ -273,7 +351,7 @@ def optimize(
         else:
             unresolved.append(match.query)
 
-    item_codes = [m.item_code for m in resolved]
+    item_codes = [item.item_code for item in items]
     if not item_codes:
         return BasketResult(
             matches=matches, items=[], total=0.0, savings=0.0, unresolved=unresolved
@@ -284,26 +362,7 @@ def optimize(
         cheapest_total = sum(item.cheapest.price for item in items if item.cheapest)
         average_total = _average_total(item_codes, db_path, state=state)
         ranking = state_ranking(item_codes, db_path)
-        if state:
-            store_rank = top_stores_in_state(item_codes, db_path, state)
-        elif cheapest_store:
-            info = get_premise_info(cheapest_store[0], db_path)
-            store_rank = (
-                [
-                    StoreRanking(
-                        premise_code=cheapest_store[0],
-                        premise=info[0] if info else f"Store {cheapest_store[0]}",
-                        state=info[1] if info else None,
-                        total=round(cheapest_store[1], 2),
-                        items_found=len(item_codes),
-                        address=info[2] if info else None,
-                    )
-                ]
-                if info
-                else []
-            )
-        else:
-            store_rank = []
+        store_rank = top_stores_in_state(item_codes, db_path, state)
     except sqlite3.Error as e:
         return BasketResult(
             matches=matches,

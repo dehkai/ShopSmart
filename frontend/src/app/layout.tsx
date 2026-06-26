@@ -21,10 +21,27 @@ const jetbrainsMono = JetBrains_Mono({
   weight: ['400', '500'],
 })
 
+import type { Viewport } from 'next'
+import { RegisterServiceWorker } from '@/components/RegisterServiceWorker'
+
+export const viewport: Viewport = {
+  themeColor: '#0e1322',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+}
+
 export const metadata: Metadata = {
   title: 'ShopSmart — Malaysia Grocery Basket Optimizer',
   description:
     'Find the cheapest grocery basket across Malaysian stores using PriceCatcher data.',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'ShopSmart',
+  },
 }
 
 export default function RootLayout({
@@ -41,7 +58,10 @@ export default function RootLayout({
           minHeight: '100vh',
         }}
       >
-        <Providers>{children}</Providers>
+        <Providers>
+          <RegisterServiceWorker />
+          {children}
+        </Providers>
       </body>
     </html>
   )

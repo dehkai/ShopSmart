@@ -3,12 +3,14 @@
 import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useTheme } from 'next-themes'
-import { Sun, Moon } from 'lucide-react'
+import { Sun, Moon, Smartphone } from 'lucide-react'
 import { useBasket } from '@/hooks/useBasket'
 import { BasketInput } from '@/components/basket/BasketInput'
 import { StateSelector } from '@/components/basket/StateSelector'
 import { ResultsSection } from '@/components/results/ResultsSection'
 import { APIKeyModal } from '@/components/basket/APIKeyModal'
+import { useIsMobile } from '@/hooks/useIsMobile'
+import { MobileAppShell } from '@/components/mobile/MobileAppShell'
 
 const EASE = [0.16, 1, 0.3, 1] as const
 
@@ -39,6 +41,10 @@ export default function Home() {
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
 
+  const isMobile = useIsMobile()
+  const [isSimulatorMode, setIsSimulatorMode] = useState(false)
+  const showMobile = isMobile || isSimulatorMode
+
   // 3D Parallax hover state for the floating card
   const [tilt, setTilt] = useState({ x: -2, y: 0 })
 
@@ -51,6 +57,45 @@ export default function Home() {
 
   const handleMouseLeave = () => {
     setTilt({ x: -2, y: 0 })
+  }
+
+  if (showMobile) {
+    return (
+      <>
+        <MobileAppShell
+          basketText={basketText}
+          setBasketText={setBasketText}
+          selectedState={selectedState}
+          setSelectedState={setSelectedState}
+          result={result}
+          submittedCount={submittedCount}
+          loading={loading}
+          error={error}
+          handleSubmit={handleSubmit}
+          reset={reset}
+          apiKey={apiKey}
+          provider={provider}
+          model={model}
+          setIsModalOpen={setIsModalOpen}
+          resolvedTheme={resolvedTheme}
+          setTheme={setTheme}
+          mounted={mounted}
+          isSimulatorMode={isSimulatorMode}
+          setIsSimulatorMode={setIsSimulatorMode}
+        />
+        <AnimatePresence>
+          {isModalOpen && (
+            <APIKeyModal
+              onClose={handleCloseModal}
+              onSave={handleSaveAPIKey}
+              initialProvider={provider}
+              initialModel={model}
+              initialApiKey={apiKey}
+            />
+          )}
+        </AnimatePresence>
+      </>
+    )
   }
 
   return (
@@ -68,6 +113,17 @@ export default function Home() {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Mobile Simulator Toggle */}
+          <button
+            type="button"
+            onClick={() => setIsSimulatorMode(true)}
+            className="w-9 h-9 flex items-center justify-center rounded-full bg-overlay-sm border border-border hover:bg-overlay-md transition-[background-color,border-color] duration-200 text-muted hover:text-fg cursor-pointer"
+            title="Simulate Mobile PWA View"
+            aria-label="Simulate Mobile View"
+          >
+            <Smartphone size={15} />
+          </button>
+
           {/* Theme toggle */}
           <button
             type="button"

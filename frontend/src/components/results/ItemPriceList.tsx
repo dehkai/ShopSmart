@@ -60,7 +60,25 @@ function DetailedBreakdown({ items }: { items: BasketItemResult[] }) {
                 >
                   <td className="px-8 py-5 font-semibold text-fg">{item.item_name}</td>
                   <td className="px-8 py-5 text-muted">
-                    {cheapest?.premise ?? <span className="text-muted/30 italic">No store found</span>}
+                    {cheapest ? (
+                      cheapest.address ? (
+                        <a
+                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                            `${cheapest.premise}, ${cheapest.address}`
+                          )}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:text-primary transition-colors cursor-pointer font-medium"
+                          title={`Directions to ${cheapest.premise}`}
+                        >
+                          {cheapest.premise}
+                        </a>
+                      ) : (
+                        cheapest.premise
+                      )
+                    ) : (
+                      <span className="text-muted/30 italic">No store found</span>
+                    )}
                   </td>
                   <td className="px-8 py-5 text-muted">
                     {cheapest?.state ?? <span className="text-muted/30">—</span>}
@@ -202,9 +220,23 @@ function ConveniencePremium({ items, recommendedStore }: { items: BasketItemResu
 
                   <td className="px-8 py-5 text-muted">
                     {cheapest ? (
-                      isMatch
-                        ? <span className="text-muted/40 italic">Same store</span>
-                        : cheapest.premise
+                      isMatch ? (
+                        <span className="text-muted/40 italic">Same store</span>
+                      ) : cheapest.address ? (
+                        <a
+                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                            `${cheapest.premise}, ${cheapest.address}`
+                          )}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:text-primary transition-colors cursor-pointer font-medium"
+                          title={`Directions to ${cheapest.premise}`}
+                        >
+                          {cheapest.premise}
+                        </a>
+                      ) : (
+                        cheapest.premise
+                      )
                     ) : (
                       <span className="text-muted/30">—</span>
                     )}
