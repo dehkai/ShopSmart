@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Sun, Moon, Key, Settings, RefreshCcw, Search, Sparkles, SlidersHorizontal, Layers, TrendingDown, ClipboardList, Laptop, X, Store, MapPin } from 'lucide-react'
 import type { BasketResult, BasketItemResult } from '@/lib/types'
+import type { Coordinates } from '@/hooks/useGeolocation'
 import { MobileInputView } from './MobileInputView'
 import { MobileOverviewView } from './MobileOverviewView'
 import { MobileItemsView } from './MobileItemsView'
@@ -13,6 +14,11 @@ interface MobileAppShellProps {
   setBasketText: (val: string) => void
   selectedState: string
   setSelectedState: (val: string) => void
+  locationMode: 'gps' | 'region'
+  setLocationMode: (mode: 'gps' | 'region') => void
+  setCoords: (coords: Coordinates | null) => void
+  radiusKm: number
+  setRadiusKm: (km: number) => void
   result: BasketResult | null
   submittedCount: number
   loading: boolean
@@ -37,6 +43,11 @@ export function MobileAppShell({
   setBasketText,
   selectedState,
   setSelectedState,
+  locationMode,
+  setLocationMode,
+  setCoords,
+  radiusKm,
+  setRadiusKm,
   result,
   submittedCount,
   loading,
@@ -114,6 +125,11 @@ export function MobileAppShell({
             setBasketText={setBasketText}
             selectedState={selectedState}
             setSelectedState={setSelectedState}
+            locationMode={locationMode}
+            setLocationMode={setLocationMode}
+            setCoords={setCoords}
+            radiusKm={radiusKm}
+            setRadiusKm={setRadiusKm}
             loading={loading}
             error={error}
             handleSubmit={handleSubmit}
@@ -422,7 +438,7 @@ export function MobileAppShell({
                       })
                     ) : (
                       <div className="text-xs text-muted/60 italic py-4 text-center">
-                        No premise pricing available for this region.
+                        No premise pricing available for this state.
                       </div>
                     )}
                   </div>

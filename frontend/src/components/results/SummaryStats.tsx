@@ -2,6 +2,7 @@
 
 import { CheckCircle, TrendingUp, AlertTriangle, MapPin, Navigation } from 'lucide-react'
 import type { BasketItemResult } from '@/lib/types'
+import { formatDistance, storeMapsUrl } from '@/lib/format'
 
 interface SummaryStatsProps {
   total: number
@@ -12,6 +13,11 @@ interface SummaryStatsProps {
   cheapestPremise: string | null
   cheapestPremiseState?: string | null
   cheapestPremiseAddress?: string | null
+  cheapestPremiseDistance?: number | null
+  cheapestPremiseDistanceSource?: 'driving' | 'straight_line' | null
+  cheapestPremiseLat?: number | null
+  cheapestPremiseLng?: number | null
+  isGpsMode?: boolean
   items: BasketItemResult[]
   selectedState?: string
   isSingleStore?: boolean
@@ -28,6 +34,11 @@ export function SummaryStats({
   cheapestPremise,
   cheapestPremiseState = null,
   cheapestPremiseAddress = null,
+  cheapestPremiseDistance = null,
+  cheapestPremiseDistanceSource = null,
+  cheapestPremiseLat = null,
+  cheapestPremiseLng = null,
+  isGpsMode = false,
   items,
   selectedState = '',
   isSingleStore = true,
@@ -37,6 +48,15 @@ export function SummaryStats({
   // Clamp unresolved to submitted count — LLM may hallucinate extras beyond what user submitted
   const displayUnresolved = Math.max(0, totalCount - matchedCount)
   const displayState = cheapestPremiseState ?? selectedState ?? null
+  const bestStoreMapsUrl =
+    cheapestPremise && cheapestPremiseAddress
+      ? storeMapsUrl({
+          premise: cheapestPremise,
+          address: cheapestPremiseAddress,
+          latitude: cheapestPremiseLat,
+          longitude: cheapestPremiseLng,
+        })
+      : null
 
   return (
     <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
@@ -78,7 +98,7 @@ export function SummaryStats({
           {savings > 0 && <TrendingUp size={20} className="text-primary" />}
         </div>
         <div className="text-xs text-muted/60">
-          {selectedState ? `vs avg in ${selectedState}` : 'vs regional average'}
+          {isGpsMode ? 'vs nearby average' : selectedState ? `vs avg in ${selectedState}` : 'vs state average'}
         </div>
       </div>
 
@@ -119,9 +139,7 @@ export function SummaryStats({
           </div>
           {cheapestPremise && cheapestPremiseAddress && (
             <a
-              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                `${cheapestPremise}, ${cheapestPremiseAddress}`
-              )}`}
+              href={bestStoreMapsUrl ?? undefined}
               target="_blank"
               rel="noopener noreferrer"
               title={`Directions to ${cheapestPremiseAddress}`}
@@ -134,9 +152,7 @@ export function SummaryStats({
 
         {cheapestPremise && cheapestPremiseAddress ? (
           <a
-            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-              `${cheapestPremise}, ${cheapestPremiseAddress}`
-            )}`}
+            href={bestStoreMapsUrl ?? undefined}
             target="_blank"
             rel="noopener noreferrer"
             title={`Directions to ${cheapestPremiseAddress}`}
@@ -151,12 +167,21 @@ export function SummaryStats({
         )}
 
         <div className="z-10 flex justify-between items-end text-xs text-muted/60">
-          <div>{displayState ? `${displayState}` : 'Malaysia'}</div>
+          <div className="flex items-center gap-1">
+            {cheapestPremise && cheapestPremiseDistance != null ? (
+              <>
+                <Navigation size={11} className="text-primary" />
+                <span className="font-semibold text-primary">
+                  {formatDistance(cheapestPremiseDistance, cheapestPremiseDistanceSource)} away
+                </span>
+              </>
+            ) : (
+              <span>{displayState ? `${displayState}` : 'Malaysia'}</span>
+            )}
+          </div>
           {cheapestPremise && cheapestPremiseAddress && (
             <a
-              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                `${cheapestPremise}, ${cheapestPremiseAddress}`
-              )}`}
+              href={bestStoreMapsUrl ?? undefined}
               target="_blank"
               rel="noopener noreferrer"
               title={`Directions to ${cheapestPremiseAddress}`}

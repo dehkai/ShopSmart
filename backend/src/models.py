@@ -16,6 +16,10 @@ class PremisePrice(BaseModel):
     state: str
     price: float
     address: str | None = None
+    distance_km: float | None = None
+    distance_source: str | None = None  # 'driving' | 'straight_line'
+    latitude: float | None = None
+    longitude: float | None = None
 
 
 class BasketItemResult(BaseModel):
@@ -38,6 +42,10 @@ class StoreRanking(BaseModel):
     total: float
     items_found: int
     address: str | None = None
+    distance_km: float | None = None
+    distance_source: str | None = None  # 'driving' | 'straight_line'
+    latitude: float | None = None
+    longitude: float | None = None
 
 
 class BasketResult(BaseModel):
@@ -52,3 +60,5 @@ class BasketResult(BaseModel):
     unresolved: list[str] = Field(default_factory=list)
     error: str | None = None
     is_fuzzy_fallback: bool = False
+    radius_km_used: float | None = None
+    no_stores_in_radius: bool = False

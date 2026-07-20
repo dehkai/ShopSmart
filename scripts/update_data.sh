@@ -17,4 +17,10 @@ echo "Running ETL pipeline to update SQLite..."
 cd backend
 uv run python -c "from src.etl import run_all; run_all()"
 
+# 3. Geocode any new/changed premises (incremental — cached premises are skipped)
+# Non-fatal: a missing/expired API key or Google API outage must not take
+# down the price data update that already succeeded above.
+echo "Geocoding new/changed premises..."
+uv run python ../scripts/geocode_premises.py || echo "WARNING: geocoding step failed, continuing (price data already updated)"
+
 echo "=== Data update completed successfully: $(date) ==="

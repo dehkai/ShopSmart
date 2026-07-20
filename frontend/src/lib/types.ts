@@ -15,6 +15,10 @@ export interface PremisePrice {
   state: string
   price: number
   address?: string | null
+  distance_km?: number | null
+  distance_source?: 'driving' | 'straight_line' | null
+  latitude?: number | null
+  longitude?: number | null
 }
 
 export interface BasketItemResult {
@@ -37,6 +41,10 @@ export interface StoreRanking {
   total: number
   items_found: number
   address?: string | null
+  distance_km?: number | null
+  distance_source?: 'driving' | 'straight_line' | null
+  latitude?: number | null
+  longitude?: number | null
 }
 
 export interface BasketResult {
@@ -51,6 +59,8 @@ export interface BasketResult {
   unresolved: string[]
   is_fuzzy_fallback: boolean
   error?: string | null
+  radius_km_used?: number | null
+  no_stores_in_radius?: boolean
 }
 
 
@@ -60,6 +70,9 @@ export interface BasketRequest {
   provider?: 'gemini'
   model?: string
   api_key?: string
+  lat?: number
+  lng?: number
+  radius_km?: number
 }
 
 export interface ApiError {

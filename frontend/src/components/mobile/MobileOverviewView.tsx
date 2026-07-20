@@ -1,7 +1,8 @@
 'use client'
 
 import type { BasketResult } from '@/lib/types'
-import { Landmark, TrendingDown, CheckCircle, Percent, ArrowRight } from 'lucide-react'
+import { Landmark, TrendingDown, CheckCircle, Percent, Navigation } from 'lucide-react'
+import { formatDistance, storeMapsUrl } from '@/lib/format'
 
 interface MobileOverviewViewProps {
   result: BasketResult
@@ -11,7 +12,8 @@ interface MobileOverviewViewProps {
 export function MobileOverviewView({ result, selectedState }: MobileOverviewViewProps) {
   const matchedItemsCount = result.matches.filter((m) => m.resolved).length
   const totalItemsCount = result.matches.length
-  
+
+  const isGpsMode = result.radius_km_used != null
   const recommendedStore = result.store_ranking?.[0] || null
   const otherStores = result.store_ranking?.slice(1, 6) || []
 
@@ -63,13 +65,15 @@ export function MobileOverviewView({ result, selectedState }: MobileOverviewView
           </div>
         </div>
         <div className="bg-glass-card-bg/25 border border-glass-border p-3.5 rounded-2xl flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-blue-500/10 text-blue-400 shrink-0">
-            <Landmark className="w-4 h-4" />
+          <div className={`p-2 rounded-xl shrink-0 ${isGpsMode ? 'bg-primary/10 text-primary' : 'bg-blue-500/10 text-blue-400'}`}>
+            {isGpsMode ? <Navigation className="w-4 h-4" /> : <Landmark className="w-4 h-4" />}
           </div>
           <div>
-            <div className="text-[9px] font-bold text-muted uppercase tracking-wider">Region</div>
-            <div className="text-xs font-black text-fg truncate max-w-[80px]" title={selectedState || 'National Average'}>
-              {selectedState || 'National'}
+            <div className="text-[9px] font-bold text-muted uppercase tracking-wider">
+              {isGpsMode ? 'Near you' : 'State'}
+            </div>
+            <div className="text-xs font-black text-fg truncate max-w-[80px]" title={isGpsMode ? `Within ${result.radius_km_used} km` : selectedState || 'National Average'}>
+              {isGpsMode && result.radius_km_used != null ? `${formatDistance(result.radius_km_used)}` : selectedState || 'National'}
             </div>
           </div>
         </div>
@@ -88,9 +92,7 @@ export function MobileOverviewView({ result, selectedState }: MobileOverviewView
             </div>
 
             <a
-              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                `${recommendedStore.premise}, ${recommendedStore.address || ''}`
-              )}`}
+              href={storeMapsUrl(recommendedStore)}
               target="_blank"
               rel="noopener noreferrer"
               className="block space-y-1 pr-16 group cursor-pointer"
@@ -106,8 +108,17 @@ export function MobileOverviewView({ result, selectedState }: MobileOverviewView
                 <div className="text-sm font-black text-primary">RM {recommendedStore.total.toFixed(2)}</div>
               </div>
               <div className="text-right space-y-0.5">
-                <span className="text-[9px] font-bold text-muted/50 uppercase tracking-wider">Availability</span>
-                <div className="text-xs font-bold text-fg">{recommendedStore.items_found} of {totalItemsCount} items</div>
+                <span className="text-[9px] font-bold text-muted/50 uppercase tracking-wider">
+                  {recommendedStore.distance_km != null ? 'Distance' : 'Availability'}
+                </span>
+                {recommendedStore.distance_km != null ? (
+                  <div className="flex items-center justify-end gap-1 text-xs font-bold text-primary">
+                    <Navigation className="w-3 h-3" />
+                    {formatDistance(recommendedStore.distance_km, recommendedStore.distance_source)}
+                  </div>
+                ) : (
+                  <div className="text-xs font-bold text-fg">{recommendedStore.items_found} of {totalItemsCount} items</div>
+                )}
               </div>
             </div>
           </div>
@@ -128,9 +139,7 @@ export function MobileOverviewView({ result, selectedState }: MobileOverviewView
               return (
                 <div key={store.premise_code} className="p-4 flex items-center justify-between gap-4">
                   <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                      `${store.premise}, ${store.address || ''}`
-                    )}`}
+                    href={storeMapsUrl(store)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="min-w-0 flex-1 group cursor-pointer"
@@ -144,9 +153,11 @@ export function MobileOverviewView({ result, selectedState }: MobileOverviewView
                   </a>
                   <div className="text-right shrink-0">
                     <div className="text-xs font-black text-fg">RM {store.total.toFixed(2)}</div>
-                    {diffPrice > 0 && (
+                    {store.distance_km != null ? (
+                      <div className="text-[8px] font-bold text-primary/80 font-mono mt-0.5">{formatDistance(store.distance_km, store.distance_source)} away</div>
+                    ) : diffPrice > 0 ? (
                       <div className="text-[8px] font-bold text-red-400 font-mono mt-0.5">+RM {diffPrice.toFixed(2)}</div>
-                    )}
+                    ) : null}
                   </div>
                 </div>
               )

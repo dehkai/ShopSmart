@@ -8,6 +8,9 @@ interface BasketRequestBody {
   provider?: string
   model?: string
   api_key?: string
+  lat?: number
+  lng?: number
+  radius_km?: number
 }
 
 export async function POST(request: Request): Promise<NextResponse> {
@@ -24,6 +27,9 @@ export async function POST(request: Request): Promise<NextResponse> {
     provider: body.provider,
     model: body.model,
     api_key: body.api_key,
+    lat: body.lat,
+    lng: body.lng,
+    radius_km: body.radius_km,
   }
 
   try {

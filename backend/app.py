@@ -1,12 +1,22 @@
+import os
+
+from dotenv import load_dotenv
 from fastapi import FastAPI, status, HTTPException, Query
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from pathlib import Path
 
 from src.matcher import fetch_db_items, match_items
 from src.optimizer import optimize
 from src.models import BasketResult
 
+# Explicit path, not a bare load_dotenv(): that searches upward from the
+# process's cwd, which silently misses backend/.env when uvicorn is started
+# from the repo root (e.g. `uv run --app-dir backend uvicorn app:app`).
+load_dotenv(Path(__file__).resolve().parent / ".env")
+
 app = FastAPI()
+
+ORS_API_KEY = os.environ.get("ORS_API_KEY")
 
 
 class Basket(BaseModel):
@@ -15,6 +25,9 @@ class Basket(BaseModel):
     provider: str | None = None
     model: str | None = None
     api_key: str | None = None
+    lat: float | None = Field(default=None, ge=-90, le=90)
+    lng: float | None = Field(default=None, ge=-180, le=180)
+    radius_km: float | None = Field(default=None, gt=0, le=100)
 
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
@@ -42,7 +55,13 @@ def handle_basket(payload: Basket):
             api_key=payload.api_key,
         )
         optimized_basket = optimize(
-            matcher_response.matches, str(DB_FILE), state=payload.state
+            matcher_response.matches,
+            str(DB_FILE),
+            state=payload.state,
+            lat=payload.lat,
+            lng=payload.lng,
+            radius_km=payload.radius_km,
+            ors_api_key=ORS_API_KEY,
         )
         optimized_basket.is_fuzzy_fallback = matcher_response.is_fuzzy_fallback
         if matcher_response.error:

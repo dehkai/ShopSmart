@@ -6,7 +6,7 @@ import { useTheme } from 'next-themes'
 import { Sun, Moon, Smartphone } from 'lucide-react'
 import { useBasket } from '@/hooks/useBasket'
 import { BasketInput } from '@/components/basket/BasketInput'
-import { StateSelector } from '@/components/basket/StateSelector'
+import { LocationControl } from '@/components/basket/LocationControl'
 import { ResultsSection } from '@/components/results/ResultsSection'
 import { APIKeyModal } from '@/components/basket/APIKeyModal'
 import { useIsMobile } from '@/hooks/useIsMobile'
@@ -20,6 +20,11 @@ export default function Home() {
     setBasketText,
     selectedState,
     setSelectedState,
+    locationMode,
+    setLocationMode,
+    setCoords,
+    radiusKm,
+    setRadiusKm,
     result,
     submittedCount,
     loading,
@@ -67,6 +72,11 @@ export default function Home() {
           setBasketText={setBasketText}
           selectedState={selectedState}
           setSelectedState={setSelectedState}
+          locationMode={locationMode}
+          setLocationMode={setLocationMode}
+          setCoords={setCoords}
+          radiusKm={radiusKm}
+          setRadiusKm={setRadiusKm}
           result={result}
           submittedCount={submittedCount}
           loading={loading}
@@ -185,9 +195,14 @@ export default function Home() {
                   </div>
 
                   <div className="glass-card rounded-[2rem] p-6 md:p-8 lg:p-6 space-y-6 lg:space-y-4">
-                    <StateSelector
-                      value={selectedState}
-                      onChange={setSelectedState}
+                    <LocationControl
+                      mode={locationMode}
+                      onModeChange={setLocationMode}
+                      selectedState={selectedState}
+                      onStateChange={setSelectedState}
+                      radiusKm={radiusKm}
+                      onRadiusChange={setRadiusKm}
+                      onLocationChange={setCoords}
                     />
                     <BasketInput
                       value={basketText}

@@ -1,8 +1,9 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Search, AlertTriangle } from 'lucide-react'
+import { Search, AlertTriangle, MapPin } from 'lucide-react'
 import type { BasketResult } from '@/lib/types'
+import { formatDistance } from '@/lib/format'
 
 import { SummaryStats } from './SummaryStats'
 import { StateChart } from './StateChart'
@@ -51,6 +52,13 @@ export function ResultsSection({
     result.items.find((i) => i.cheapest)?.cheapest?.address ??
     null
 
+  // GPS mode is active when the backend applied a radius filter.
+  const isGpsMode = result.radius_km_used != null
+  const cheapestPremiseDistance = result.store_ranking?.[0]?.distance_km ?? null
+  const cheapestPremiseDistanceSource = result.store_ranking?.[0]?.distance_source ?? null
+  const cheapestPremiseLat = result.store_ranking?.[0]?.latitude ?? null
+  const cheapestPremiseLng = result.store_ranking?.[0]?.longitude ?? null
+
   // Use LLM-resolved item count (backend may split comma-separated lines into multiple items)
   const totalItems = result.matches.length > 0
     ? result.matches.length
@@ -78,6 +86,12 @@ export function ResultsSection({
           <p className="text-muted text-sm">
             Based on your basket of {totalItems} item{totalItems !== 1 ? 's' : ''} across Malaysia&apos;s retailers.
           </p>
+          {isGpsMode && result.radius_km_used != null && (
+            <p className="flex items-center gap-1.5 text-xs font-semibold text-primary">
+              <MapPin size={13} />
+              Showing stores within {formatDistance(result.radius_km_used)} of you
+            </p>
+          )}
         </div>
 
         <button
@@ -89,6 +103,26 @@ export function ResultsSection({
           <Search size={14} />
         </button>
       </motion.header>
+
+      {result.no_stores_in_radius && (
+        <motion.div
+          variants={childVariants}
+          className="relative overflow-hidden glass-card border border-amber-500/20 bg-amber-500/5 rounded-2xl p-5 md:p-6 flex flex-col sm:flex-row items-start gap-4 select-none"
+        >
+          <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
+          <div className="p-3 bg-amber-500/10 rounded-xl text-amber-400 shrink-0">
+            <MapPin className="w-6 h-6" />
+          </div>
+          <div className="space-y-1.5 flex-1 min-w-0">
+            <h3 className="text-amber-300 font-bold text-base tracking-tight">
+              No stores near you
+            </h3>
+            <p className="text-muted/80 text-sm leading-relaxed">
+              We couldn&apos;t find stores within your search radius — showing the nearest state instead. Try widening the radius or switch to &quot;By state&quot;.
+            </p>
+          </div>
+        </motion.div>
+      )}
 
       {result.is_fuzzy_fallback && (
         <motion.div
@@ -142,6 +176,11 @@ export function ResultsSection({
           cheapestPremise={cheapestPremise}
           cheapestPremiseState={cheapestPremiseState}
           cheapestPremiseAddress={cheapestPremiseAddress}
+          cheapestPremiseLat={cheapestPremiseLat}
+          cheapestPremiseLng={cheapestPremiseLng}
+          cheapestPremiseDistance={cheapestPremiseDistance}
+          cheapestPremiseDistanceSource={cheapestPremiseDistanceSource}
+          isGpsMode={isGpsMode}
           items={result.items}
           selectedState={selectedState}
           isSingleStore={result.is_single_store}
@@ -159,6 +198,7 @@ export function ResultsSection({
             stateRanking={result.state_ranking ?? []}
             storeRanking={result.store_ranking ?? []}
             selectedState={selectedState}
+            isGpsMode={isGpsMode}
             averageTotal={result.total + result.savings}
             nationalAverage={result.national_average}
             totalItemCount={totalItems}

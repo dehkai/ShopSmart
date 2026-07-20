@@ -2,13 +2,19 @@
 
 import { useState } from 'react'
 import { ArrowRight, Sparkles } from 'lucide-react'
-import { StateSelector } from '@/components/basket/StateSelector'
+import { LocationControl } from '@/components/basket/LocationControl'
+import type { Coordinates } from '@/hooks/useGeolocation'
 
 interface MobileInputViewProps {
   basketText: string
   setBasketText: (val: string) => void
   selectedState: string
   setSelectedState: (val: string) => void
+  locationMode: 'gps' | 'region'
+  setLocationMode: (mode: 'gps' | 'region') => void
+  setCoords: (coords: Coordinates | null) => void
+  radiusKm: number
+  setRadiusKm: (km: number) => void
   loading: boolean
   error: string | null
   handleSubmit: () => void
@@ -32,6 +38,11 @@ export function MobileInputView({
   setBasketText,
   selectedState,
   setSelectedState,
+  locationMode,
+  setLocationMode,
+  setCoords,
+  radiusKm,
+  setRadiusKm,
   loading,
   error,
   handleSubmit,
@@ -54,9 +65,17 @@ export function MobileInputView({
         </p>
       </div>
 
-      {/* State / Region picker */}
+      {/* Location / State picker */}
       <div className="bg-glass-card-bg/25 border border-glass-border p-4 rounded-2xl">
-        <StateSelector value={selectedState} onChange={setSelectedState} />
+        <LocationControl
+          mode={locationMode}
+          onModeChange={setLocationMode}
+          selectedState={selectedState}
+          onStateChange={setSelectedState}
+          radiusKm={radiusKm}
+          onRadiusChange={setRadiusKm}
+          onLocationChange={setCoords}
+        />
       </div>
 
       {/* Shopping List Input */}

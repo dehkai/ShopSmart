@@ -1,11 +1,13 @@
 'use client'
 
 import type { StateRanking, StoreRanking } from '@/lib/types'
+import { formatDistance, storeMapsUrl } from '@/lib/format'
 
 interface StateChartProps {
   stateRanking: StateRanking[]
   storeRanking?: StoreRanking[]
   selectedState?: string
+  isGpsMode?: boolean
   /** avg(all stores in state) – used as reference line in store mode */
   averageTotal?: number
   /** avg basket price across all stores nationally */
@@ -96,16 +98,20 @@ function StoreMode({
   selectedState,
   itemCount,
   averageTotal,
+  isGpsMode = false,
 }: {
   storeRanking: StoreRanking[]
   selectedState: string
   itemCount: number
   averageTotal?: number
+  isGpsMode?: boolean
 }) {
   if (storeRanking.length === 0) {
     return (
       <div className="glass-card p-8 rounded-xl flex flex-col justify-center items-center gap-3 min-h-[220px]">
-        <p className="text-sm text-muted/60">No stores found in {selectedState} for this basket.</p>
+        <p className="text-sm text-muted/60">
+          {isGpsMode ? 'No stores near you for this basket.' : `No stores found in ${selectedState} for this basket.`}
+        </p>
       </div>
     )
   }
@@ -124,7 +130,7 @@ function StoreMode({
       <div className="flex justify-between items-start mb-8">
         <div>
           <h3 className="text-sm font-semibold uppercase tracking-widest text-muted mb-1">
-            Cheapest Stores in {selectedState}
+            {isGpsMode ? 'Cheapest Stores near you' : `Cheapest Stores in ${selectedState}`}
           </h3>
           <p className="text-xs text-muted/60">
             Top {storeRanking.length} store{storeRanking.length !== 1 ? 's' : ''} for your basket
@@ -143,9 +149,7 @@ function StoreMode({
               <div className="w-28 text-right flex flex-col items-end">
                 {row.address ? (
                   <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                      `${row.premise}, ${row.address}`
-                    )}`}
+                    href={storeMapsUrl(row)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={`text-xs leading-tight line-clamp-2 hover:text-primary transition-colors cursor-pointer ${
@@ -163,6 +167,11 @@ function StoreMode({
                 {hasPartialStock && (
                   <span className="text-[10px] text-error/70">
                     {row.items_found}/{itemCount} items
+                  </span>
+                )}
+                {row.distance_km != null && (
+                  <span className="text-[10px] font-semibold text-primary/80">
+                    {formatDistance(row.distance_km, row.distance_source)} away
                   </span>
                 )}
               </div>
@@ -227,13 +236,16 @@ export function StateChart({
   stateRanking,
   storeRanking = [],
   selectedState = '',
+  isGpsMode = false,
   averageTotal,
   nationalAverage,
   totalItemCount,
 }: StateChartProps) {
   const hasStateFilter = selectedState.trim().length > 0
 
-  if (hasStateFilter) {
+  // GPS mode has no state filter but should still show the per-store ranking
+  // (now distance-annotated), not the by-state bar chart.
+  if (hasStateFilter || isGpsMode) {
     const itemCount = totalItemCount ?? (
       storeRanking.length > 0
         ? Math.max(...storeRanking.map((r) => r.items_found))
@@ -246,6 +258,7 @@ export function StateChart({
         selectedState={selectedState}
         itemCount={itemCount}
         averageTotal={averageTotal}
+        isGpsMode={isGpsMode}
       />
     )
   }

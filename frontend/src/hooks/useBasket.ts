@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { submitBasket } from '@/lib/api'
 import type { BasketResult, ApiError, ItemMatch, BasketItemResult } from '@/lib/types'
+import type { Coordinates } from '@/hooks/useGeolocation'
 
 const USE_MOCK = false
 
@@ -84,6 +85,9 @@ function generateMockResult(queries: string[], selectedState: string): BasketRes
 export function useBasket() {
   const [basketText, setBasketText] = useState<string>('')
   const [selectedState, setSelectedState] = useState<string>('')
+  const [locationMode, setLocationMode] = useState<'gps' | 'region'>('region')
+  const [coords, setCoords] = useState<Coordinates | null>(null)
+  const [radiusKm, setRadiusKm] = useState<number>(10)
   const [result, setResult] = useState<BasketResult | null>(null)
   const [submittedCount, setSubmittedCount] = useState<number>(0)
   const [loading, setLoading] = useState<boolean>(false)
@@ -153,13 +157,20 @@ export function useBasket() {
       return
     }
 
+    // GPS and region are mutually exclusive — send only the active mode's
+    // inputs so intent is explicit and stale values aren't forwarded.
+    const useGps = locationMode === 'gps' && coords !== null
+
     try {
       const data = await submitBasket({
         items,
-        state: selectedState || undefined,
+        state: useGps ? undefined : selectedState || undefined,
         provider: currentProvider,
         model: currentModel,
         api_key: currentApiKey,
+        lat: useGps ? coords.lat : undefined,
+        lng: useGps ? coords.lng : undefined,
+        radius_km: useGps ? radiusKm : undefined,
       })
       setResult(data)
     } catch (err) {
@@ -168,7 +179,7 @@ export function useBasket() {
     } finally {
       setLoading(false)
     }
-  }, [basketText, selectedState, provider, model, apiKey])
+  }, [basketText, selectedState, locationMode, coords, radiusKm, provider, model, apiKey])
 
   const handleSubmit = useCallback(async () => {
     await runSubmit()
@@ -213,6 +224,12 @@ export function useBasket() {
     setBasketText: handleChange,
     selectedState,
     setSelectedState,
+    locationMode,
+    setLocationMode,
+    coords,
+    setCoords,
+    radiusKm,
+    setRadiusKm,
     result,
     submittedCount,
     loading,

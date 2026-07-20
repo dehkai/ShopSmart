@@ -1,6 +1,7 @@
 'use client'
 
 import type { BasketItemResult } from '@/lib/types'
+import { storeMapsUrl } from '@/lib/format'
 
 interface ItemPriceListProps {
   items: BasketItemResult[]
@@ -24,7 +25,7 @@ function DetailedBreakdown({ items }: { items: BasketItemResult[] }) {
           Detailed Price Breakdown
         </h3>
         <p className="text-xs text-muted/60">
-          Item-by-item comparison across regional stores
+          Item-by-item comparison across state stores
         </p>
       </div>
 
@@ -63,9 +64,7 @@ function DetailedBreakdown({ items }: { items: BasketItemResult[] }) {
                     {cheapest ? (
                       cheapest.address ? (
                         <a
-                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                            `${cheapest.premise}, ${cheapest.address}`
-                          )}`}
+                          href={storeMapsUrl(cheapest)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="hover:text-primary transition-colors cursor-pointer font-medium"
@@ -224,9 +223,7 @@ function ConveniencePremium({ items, recommendedStore }: { items: BasketItemResu
                         <span className="text-muted/40 italic">Same store</span>
                       ) : cheapest.address ? (
                         <a
-                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                            `${cheapest.premise}, ${cheapest.address}`
-                          )}`}
+                          href={storeMapsUrl(cheapest)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="hover:text-primary transition-colors cursor-pointer font-medium"

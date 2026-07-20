@@ -15,7 +15,7 @@ export function StateSelector({ value, onChange }: StateSelectorProps) {
         className="text-[10px] font-bold uppercase tracking-wider text-muted/60"
         style={{ letterSpacing: '0.1em' }}
       >
-        Select Region
+        Select State
       </label>
 
       <div className="relative w-full">
