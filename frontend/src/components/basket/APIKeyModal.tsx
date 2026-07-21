@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Eye, EyeOff, Key, HelpCircle, X } from 'lucide-react'
+import { EASE_OUT as MODAL_EASE } from '@/lib/motion'
 
 interface APIKeyModalProps {
   onClose: () => void
@@ -11,8 +12,6 @@ interface APIKeyModalProps {
   initialModel?: string
   initialApiKey?: string
 }
-
-const MODAL_EASE = [0.23, 1, 0.32, 1] as const
 
 const PROVIDERS = {
   gemini: {

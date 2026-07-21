@@ -1,15 +1,23 @@
 'use client'
 
+import { motion, useReducedMotion } from 'framer-motion'
 import type { BasketResult } from '@/lib/types'
 import { Landmark, TrendingDown, CheckCircle, Percent, Navigation } from 'lucide-react'
 import { formatDistance, storeMapsUrl } from '@/lib/format'
+import { EASE_OUT } from '@/lib/motion'
 
 interface MobileOverviewViewProps {
   result: BasketResult
   selectedState: string
 }
 
+const containerVariants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.05 } },
+}
+
 export function MobileOverviewView({ result, selectedState }: MobileOverviewViewProps) {
+  const reduceMotion = useReducedMotion()
   const matchedItemsCount = result.matches.filter((m) => m.resolved).length
   const totalItemsCount = result.matches.length
 
@@ -21,10 +29,23 @@ export function MobileOverviewView({ result, selectedState }: MobileOverviewView
   const averageTotal = result.total + result.savings
   const savingsPct = averageTotal > 0 ? Math.round((result.savings / averageTotal) * 100) : 0
 
+  const itemVariants = {
+    hidden: { opacity: 0, y: reduceMotion ? 0 : 8 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.2, ease: EASE_OUT } },
+  }
+
   return (
-    <div className="flex flex-col gap-5 px-4 py-4 overflow-y-auto pb-24 h-full">
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+      className="flex flex-col gap-5 px-4 py-4 overflow-y-auto pb-[calc(6rem+env(safe-area-inset-bottom))] h-full"
+    >
       {/* 1. Header Hero Card (Savings focus) */}
-      <div className="relative overflow-hidden rounded-[24px] bg-gradient-to-br from-primary via-primary-dim to-primary p-6 text-on-primary shadow-lg shadow-primary/20 shrink-0">
+      <motion.div
+        variants={itemVariants}
+        className="relative overflow-hidden rounded-[24px] bg-gradient-to-br from-primary via-primary-dim to-primary p-6 text-on-primary shadow-lg shadow-primary/20 shrink-0"
+      >
         {/* Glow effect */}
         <div className="absolute -right-12 -top-12 w-36 h-36 bg-white/10 rounded-full blur-2xl" />
 
@@ -51,10 +72,10 @@ export function MobileOverviewView({ result, selectedState }: MobileOverviewView
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* 2. Quick Info Chips */}
-      <div className="grid grid-cols-2 gap-3 shrink-0">
+      <motion.div variants={itemVariants} className="grid grid-cols-2 gap-3 shrink-0">
         <div className="bg-glass-card-bg/25 border border-glass-border p-3.5 rounded-2xl flex items-center gap-3">
           <div className="p-2 rounded-xl bg-primary/10 text-primary shrink-0">
             <CheckCircle className="w-4 h-4" />
@@ -77,11 +98,11 @@ export function MobileOverviewView({ result, selectedState }: MobileOverviewView
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* 3. Recommended Store Card */}
       {recommendedStore && (
-        <div className="space-y-2.5 shrink-0">
+        <motion.div variants={itemVariants} className="space-y-2.5 shrink-0">
           <div className="text-[10px] font-bold uppercase tracking-wider text-muted/60" style={{ letterSpacing: '0.08em' }}>
             Recommended Retailer
           </div>
@@ -122,12 +143,12 @@ export function MobileOverviewView({ result, selectedState }: MobileOverviewView
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* 4. Retailer Rankings list */}
       {otherStores.length > 0 && (
-        <div className="space-y-2.5 shrink-0">
+        <motion.div variants={itemVariants} className="space-y-2.5 shrink-0">
           <div className="text-[10px] font-bold uppercase tracking-wider text-muted/60" style={{ letterSpacing: '0.08em' }}>
             Alternative Store Prices
           </div>
@@ -163,8 +184,8 @@ export function MobileOverviewView({ result, selectedState }: MobileOverviewView
               )
             })}
           </div>
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   )
 }

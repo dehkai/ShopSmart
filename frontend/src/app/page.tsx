@@ -11,8 +11,7 @@ import { ResultsSection } from '@/components/results/ResultsSection'
 import { APIKeyModal } from '@/components/basket/APIKeyModal'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { MobileAppShell } from '@/components/mobile/MobileAppShell'
-
-const EASE = [0.16, 1, 0.3, 1] as const
+import { EASE_OUT as EASE } from '@/lib/motion'
 
 export default function Home() {
   const {

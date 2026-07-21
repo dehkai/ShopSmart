@@ -25,11 +25,13 @@ import type { Viewport } from 'next'
 import { RegisterServiceWorker } from '@/components/RegisterServiceWorker'
 
 export const viewport: Viewport = {
-  themeColor: '#0e1322',
+  themeColor: [
+    { media: '(prefers-color-scheme: dark)', color: '#0e1322' },
+    { media: '(prefers-color-scheme: light)', color: '#f7f8fa' },
+  ],
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
-  userScalable: false,
   viewportFit: 'cover',
 }
 

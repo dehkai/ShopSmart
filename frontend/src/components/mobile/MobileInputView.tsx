@@ -1,8 +1,11 @@
 'use client'
 
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowRight, Sparkles } from 'lucide-react'
 import { LocationControl } from '@/components/basket/LocationControl'
+import { Spinner } from '@/components/ui/Spinner'
+import { EASE_OUT } from '@/lib/motion'
 import type { Coordinates } from '@/hooks/useGeolocation'
 
 interface MobileInputViewProps {
@@ -57,7 +60,7 @@ export function MobileInputView({
   }
 
   return (
-    <div className="flex flex-col gap-5 px-4 py-4 overflow-y-auto pb-24 h-full">
+    <div className="flex flex-col gap-5 px-4 py-4 overflow-y-auto pb-[calc(6rem+env(safe-area-inset-bottom))] h-full">
       <div className="space-y-1">
         <h2 className="text-xl font-extrabold text-fg tracking-tight">Smart Optimizer</h2>
         <p className="text-[11px] text-muted leading-relaxed">
@@ -99,7 +102,7 @@ export function MobileInputView({
           onChange={(e) => setBasketText(e.target.value)}
           placeholder="e.g.&#10;1kg Red Onions&#10;1 loaf Gardenia Bread&#10;5kg Jasmine Rice"
           disabled={loading}
-          className="w-full flex-1 min-h-[140px] bg-surface-dim/40 border border-border rounded-2xl p-4 font-mono text-primary focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all placeholder:text-subtle/35 resize-none text-xs leading-relaxed"
+          className="w-full flex-1 min-h-[140px] bg-surface-dim/40 border border-border rounded-2xl p-4 font-mono text-primary focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-[border-color,box-shadow] duration-200 ease-out placeholder:text-subtle/35 resize-none text-xs leading-relaxed"
           spellCheck={false}
         />
       </div>
@@ -129,31 +132,55 @@ export function MobileInputView({
       </div>
 
       {/* Error message */}
-      {error && (
-        <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-xs text-error flex items-start gap-2 animate-fade-in-up">
-          <span className="mt-0.5">⚠️</span>
-          <span className="leading-relaxed">{error}</span>
-        </div>
-      )}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4, transition: { duration: 0.15 } }}
+            transition={{ duration: 0.2, ease: EASE_OUT }}
+            className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-xs text-error flex items-start gap-2"
+          >
+            <span className="mt-0.5">⚠️</span>
+            <span className="leading-relaxed">{error}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Submit Button */}
       <button
         onClick={handleSubmit}
         disabled={loading || lineCount === 0}
         type="button"
-        className="btn-shimmer w-full bg-gradient-to-r from-primary to-primary-dim text-on-primary font-bold text-xs py-4 rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-primary/15 disabled:opacity-50 disabled:pointer-events-none shrink-0 pwa-primary-btn"
+        className="w-full bg-gradient-to-r from-primary to-primary-dim text-on-primary font-bold text-xs py-4 rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-primary/15 disabled:opacity-50 disabled:pointer-events-none shrink-0 pwa-primary-btn"
       >
-        {loading ? (
-          <span className="flex items-center gap-2">
-            <span className="w-3.5 h-3.5 border-2 border-on-primary border-t-transparent rounded-full animate-spin" />
-            Optimizing Basket...
-          </span>
-        ) : (
-          <>
-            Optimize Grocery Prices
-            <ArrowRight size={14} strokeWidth={2.5} />
-          </>
-        )}
+        <AnimatePresence mode="wait">
+          {loading ? (
+            <motion.span
+              key="loading"
+              initial={{ opacity: 0, filter: 'blur(2px)' }}
+              animate={{ opacity: 1, filter: 'blur(0px)' }}
+              exit={{ opacity: 0, filter: 'blur(2px)' }}
+              transition={{ duration: 0.2, ease: EASE_OUT }}
+              className="flex items-center gap-2"
+            >
+              <Spinner size="sm" className="text-on-primary" />
+              Optimizing Basket...
+            </motion.span>
+          ) : (
+            <motion.span
+              key="idle"
+              initial={{ opacity: 0, filter: 'blur(2px)' }}
+              animate={{ opacity: 1, filter: 'blur(0px)' }}
+              exit={{ opacity: 0, filter: 'blur(2px)' }}
+              transition={{ duration: 0.2, ease: EASE_OUT }}
+              className="flex items-center gap-2"
+            >
+              Optimize Grocery Prices
+              <ArrowRight size={14} strokeWidth={2.5} />
+            </motion.span>
+          )}
+        </AnimatePresence>
       </button>
     </div>
   )

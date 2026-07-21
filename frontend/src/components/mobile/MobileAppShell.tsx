@@ -1,10 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useReducedMotion, type PanInfo } from 'framer-motion'
 import { Sun, Moon, Key, Settings, RefreshCcw, Search, Sparkles, SlidersHorizontal, Layers, TrendingDown, ClipboardList, Laptop, X, Store, MapPin } from 'lucide-react'
 import type { BasketResult, BasketItemResult } from '@/lib/types'
 import type { Coordinates } from '@/hooks/useGeolocation'
+import { EASE_OUT, EASE_DRAWER } from '@/lib/motion'
+import { Spinner } from '@/components/ui/Spinner'
 import { MobileInputView } from './MobileInputView'
 import { MobileOverviewView } from './MobileOverviewView'
 import { MobileItemsView } from './MobileItemsView'
@@ -69,6 +71,8 @@ export function MobileAppShell({
   const [itemPrices, setItemPrices] = useState<any[]>([])
   const [loadingPrices, setLoadingPrices] = useState<boolean>(false)
 
+  const reduceMotion = useReducedMotion()
+
   // Auto-switch tab to overview when result is loaded
   useEffect(() => {
     if (result) {
@@ -79,12 +83,20 @@ export function MobileAppShell({
     setSelectedItem(null)
   }, [result])
 
-  const EASE_DRAWER = [0.32, 0.72, 0, 1] as const
-
   // Reset selectedItem when switching tabs
   useEffect(() => {
     setSelectedItem(null)
   }, [activeTab])
+
+  // Close sheet on Escape
+  useEffect(() => {
+    if (!selectedItem) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSelectedItem(null)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [selectedItem])
 
   // Fetch prices dynamically for selectedItem in selectedState
   useEffect(() => {
@@ -155,7 +167,7 @@ export function MobileAppShell({
   return (
     <div className="fixed inset-0 h-[100dvh] w-screen flex flex-col bg-surface text-fg z-50 select-none overflow-hidden">
       {/* 1. Header (iOS style sticky header) */}
-      <header className="flex-shrink-0 flex items-center justify-between px-5 py-4 border-b border-border bg-surface-dim/35 backdrop-blur-md relative z-20">
+      <header className="flex-shrink-0 flex items-center justify-between px-5 py-4 pt-safe border-b border-border bg-surface-dim/35 backdrop-blur-md relative z-20">
         <div className="flex items-center gap-2">
           <span className="font-sans text-xl font-extrabold text-primary tracking-tighter">ShopSmart</span>
           <span className="bg-primary/10 text-primary border border-primary/20 rounded px-1.5 py-0.5 text-[8px] font-extrabold uppercase">
@@ -224,10 +236,10 @@ export function MobileAppShell({
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.18, ease: 'easeOut' }}
+            exit={{ opacity: 0, y: reduceMotion ? 0 : -10 }}
+            transition={{ duration: 0.18, ease: EASE_OUT }}
             className="w-full h-full"
           >
             {renderActiveView()}
@@ -243,7 +255,7 @@ export function MobileAppShell({
             <button
               onClick={() => setActiveTab('input')}
               type="button"
-              className={`flex flex-col items-center justify-center w-20 h-full relative cursor-pointer active:scale-95 transition-transform ${
+              className={`flex flex-col items-center justify-center w-20 h-full relative cursor-pointer active:scale-95 transition-transform duration-[140ms] ease-out ${
                 activeTab === 'input' ? 'text-primary' : 'text-muted/60'
               }`}
             >
@@ -253,7 +265,7 @@ export function MobileAppShell({
                 <motion.div
                   layoutId="activeTabIndicator"
                   className="absolute bottom-0 w-8 h-0.5 bg-primary rounded-full"
-                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 380, damping: 30 }}
                 />
               )}
             </button>
@@ -262,7 +274,7 @@ export function MobileAppShell({
             <button
               onClick={() => setActiveTab('overview')}
               type="button"
-              className={`flex flex-col items-center justify-center w-20 h-full relative cursor-pointer active:scale-95 transition-transform ${
+              className={`flex flex-col items-center justify-center w-20 h-full relative cursor-pointer active:scale-95 transition-transform duration-[140ms] ease-out ${
                 activeTab === 'overview' ? 'text-primary' : 'text-muted/60'
               }`}
             >
@@ -272,7 +284,7 @@ export function MobileAppShell({
                 <motion.div
                   layoutId="activeTabIndicator"
                   className="absolute bottom-0 w-8 h-0.5 bg-primary rounded-full"
-                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 380, damping: 30 }}
                 />
               )}
             </button>
@@ -281,7 +293,7 @@ export function MobileAppShell({
             <button
               onClick={() => setActiveTab('items')}
               type="button"
-              className={`flex flex-col items-center justify-center w-20 h-full relative cursor-pointer active:scale-95 transition-transform ${
+              className={`flex flex-col items-center justify-center w-20 h-full relative cursor-pointer active:scale-95 transition-transform duration-[140ms] ease-out ${
                 activeTab === 'items' ? 'text-primary' : 'text-muted/60'
               }`}
             >
@@ -291,7 +303,7 @@ export function MobileAppShell({
                 <motion.div
                   layoutId="activeTabIndicator"
                   className="absolute bottom-0 w-8 h-0.5 bg-primary rounded-full"
-                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 380, damping: 30 }}
                 />
               )}
             </button>
@@ -307,19 +319,28 @@ export function MobileAppShell({
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
+              exit={{ opacity: 0, transition: { duration: 0.2 } }}
+              transition={{ duration: 0.28, ease: EASE_DRAWER }}
               onClick={() => setSelectedItem(null)}
               className="fixed inset-0 bg-black/60 z-[60] backdrop-blur-xs"
             />
 
             {/* Bottom Sheet Container */}
             <motion.div
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
+              initial={{ y: reduceMotion ? 0 : '100%', opacity: reduceMotion ? 0 : 1 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: reduceMotion ? 0 : '100%', opacity: reduceMotion ? 0 : 1, transition: { duration: 0.2, ease: EASE_DRAWER } }}
               transition={{ duration: 0.28, ease: EASE_DRAWER }}
-              className="fixed bottom-0 inset-x-0 bg-surface border-t border-border rounded-t-[28px] z-[70] flex flex-col max-h-[85vh] shadow-2xl"
+              drag={reduceMotion ? false : 'y'}
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragElastic={{ top: 0, bottom: 0.5 }}
+              onDragEnd={(_, info: PanInfo) => {
+                if (info.offset.y > 120 || info.velocity.y > 500) setSelectedItem(null)
+              }}
+              role="dialog"
+              aria-modal="true"
+              aria-label={selectedItem.item_name}
+              className="fixed bottom-0 inset-x-0 bg-surface border-t border-border rounded-t-[28px] z-[70] flex flex-col max-h-[85vh] shadow-2xl pb-[env(safe-area-inset-bottom)]"
             >
               {/* Sheet Drag Handle Indicator */}
               <div className="w-full flex justify-center py-3 shrink-0 cursor-pointer" onClick={() => setSelectedItem(null)}>
@@ -375,7 +396,7 @@ export function MobileAppShell({
                   <div className="space-y-3">
                     {loadingPrices ? (
                       <div className="py-8 flex flex-col items-center justify-center gap-3">
-                        <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                        <Spinner className="text-primary" />
                         <span className="text-[11px] text-muted">Loading live prices...</span>
                       </div>
                     ) : itemPrices.length > 0 ? (
@@ -386,7 +407,7 @@ export function MobileAppShell({
                         return (
                           <div
                             key={idx}
-                            className={`p-4 rounded-xl border flex items-center justify-between gap-4 transition-[border-color,background-color] ${
+                            className={`p-4 rounded-xl border flex items-center justify-between gap-4 transition-[border-color,background-color] duration-200 ease-out ${
                               isCheapest
                                 ? 'bg-primary/5 border-primary/20 shadow-sm shadow-primary/5'
                                 : 'bg-glass-card-bg/10 border-border/40'
