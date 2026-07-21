@@ -26,13 +26,17 @@ interface MapsTarget {
 /**
  * Google Maps deep link for a store. Prefers the exact stored coordinate
  * (the pin the distance was measured from) so the map the user opens matches
- * our distance; falls back to a name+address text search when we have no
- * coordinate. Single source of truth for every "Directions" link.
+ * our distance, with the premise name attached as a marker label via Google's
+ * `lat,lng(label)` query syntax — otherwise the pin shows raw coordinates
+ * instead of the store name. Falls back to a name+address text search when
+ * we have no coordinate. Single source of truth for every "Directions" link.
  */
 export function storeMapsUrl(store: MapsTarget): string {
-  const query =
-    store.latitude != null && store.longitude != null
-      ? `${store.latitude},${store.longitude}`
-      : `${store.premise}, ${store.address ?? ''}`
+  const hasCoords = store.latitude != null && store.longitude != null
+  const query = hasCoords
+    ? `${store.latitude},${store.longitude}(${store.premise})`
+    : store.address
+      ? `${store.premise}, ${store.address}`
+      : store.premise
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`
 }

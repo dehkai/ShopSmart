@@ -6,6 +6,7 @@ import { Sun, Moon, Key, Settings, RefreshCcw, Search, Sparkles, SlidersHorizont
 import type { BasketResult, BasketItemResult } from '@/lib/types'
 import type { Coordinates } from '@/hooks/useGeolocation'
 import { EASE_OUT, EASE_DRAWER } from '@/lib/motion'
+import { storeMapsUrl } from '@/lib/format'
 import { Spinner } from '@/components/ui/Spinner'
 import { MobileInputView } from './MobileInputView'
 import { MobileOverviewView } from './MobileOverviewView'
@@ -414,9 +415,7 @@ export function MobileAppShell({
                             }`}
                           >
                             <a
-                              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                                `${store.premise}, ${store.address || ''}`
-                              )}`}
+                              href={storeMapsUrl(store)}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="min-w-0 flex-1 flex items-start gap-3 group/item cursor-pointer"
