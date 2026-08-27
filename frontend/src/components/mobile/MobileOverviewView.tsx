@@ -3,12 +3,13 @@
 import { motion, useReducedMotion } from 'framer-motion'
 import type { BasketResult } from '@/lib/types'
 import { Landmark, TrendingDown, CheckCircle, Percent, Navigation } from 'lucide-react'
-import { formatDistance, storeMapsUrl } from '@/lib/format'
+import { formatDistance, formatDataAge, storeMapsUrl } from '@/lib/format'
 import { EASE_OUT } from '@/lib/motion'
 
 interface MobileOverviewViewProps {
   result: BasketResult
   selectedState: string
+  dataAsOf: string | null
 }
 
 const containerVariants = {
@@ -16,7 +17,7 @@ const containerVariants = {
   show: { transition: { staggerChildren: 0.05 } },
 }
 
-export function MobileOverviewView({ result, selectedState }: MobileOverviewViewProps) {
+export function MobileOverviewView({ result, selectedState, dataAsOf }: MobileOverviewViewProps) {
   const reduceMotion = useReducedMotion()
   const matchedItemsCount = result.matches.filter((m) => m.resolved).length
   const totalItemsCount = result.matches.length
@@ -41,6 +42,18 @@ export function MobileOverviewView({ result, selectedState }: MobileOverviewView
       animate="show"
       className="flex flex-col gap-5 px-4 py-4 overflow-y-auto pb-[calc(6rem+env(safe-area-inset-bottom))] h-full"
     >
+      {dataAsOf && (() => {
+        const { label, isStale } = formatDataAge(dataAsOf)
+        return (
+          <motion.p
+            variants={itemVariants}
+            className={`text-xs -mb-2 ${isStale ? 'text-warning' : 'text-muted/70'}`}
+          >
+            {label}
+          </motion.p>
+        )
+      })()}
+
       {/* 1. Header Hero Card (Savings focus) */}
       <motion.div
         variants={itemVariants}

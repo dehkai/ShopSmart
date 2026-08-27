@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { Search, AlertTriangle, MapPin } from 'lucide-react'
 import type { BasketResult } from '@/lib/types'
-import { formatDistance } from '@/lib/format'
+import { formatDistance, formatDataAge } from '@/lib/format'
 
 import { SummaryStats } from './SummaryStats'
 import { StateChart } from './StateChart'
@@ -15,6 +15,7 @@ interface ResultsSectionProps {
   onReset: () => void
   selectedState?: string
   submittedCount?: number
+  dataAsOf?: string | null
   className?: string
 }
 
@@ -35,6 +36,7 @@ export function ResultsSection({
   onReset,
   selectedState = '',
   submittedCount,
+  dataAsOf,
   className = '',
 }: ResultsSectionProps) {
   const matchedItems = result.matches.filter((m) => m.resolved)
@@ -86,6 +88,12 @@ export function ResultsSection({
           <p className="text-muted text-sm">
             Based on your basket of {totalItems} item{totalItems !== 1 ? 's' : ''} across Malaysia&apos;s retailers.
           </p>
+          {dataAsOf && (() => {
+            const { label, isStale } = formatDataAge(dataAsOf)
+            return (
+              <p className={`text-xs ${isStale ? 'text-warning' : 'text-muted/70'}`}>{label}</p>
+            )
+          })()}
           {isGpsMode && result.radius_km_used != null && (
             <p className="flex items-center gap-1.5 text-xs font-semibold text-primary">
               <MapPin size={13} />

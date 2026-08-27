@@ -28,6 +28,7 @@ interface MobileAppShellProps {
   error: string | null
   handleSubmit: () => void
   reset: () => void
+  dataAsOf: string | null
   apiKey: string | null
   provider: string
   model: string
@@ -57,6 +58,7 @@ export function MobileAppShell({
   error,
   handleSubmit,
   reset,
+  dataAsOf,
   apiKey,
   provider,
   model,
@@ -150,7 +152,7 @@ export function MobileAppShell({
         )
       case 'overview':
         return result ? (
-          <MobileOverviewView result={result} selectedState={selectedState} />
+          <MobileOverviewView result={result} selectedState={selectedState} dataAsOf={dataAsOf} />
         ) : (
           <div className="flex items-center justify-center h-full text-xs text-muted">No results yet.</div>
         )

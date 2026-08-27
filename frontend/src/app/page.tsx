@@ -30,6 +30,7 @@ export default function Home() {
     error,
     handleSubmit,
     reset,
+    dataAsOf,
 
     // API Modal parameters
     provider,
@@ -82,6 +83,7 @@ export default function Home() {
           error={error}
           handleSubmit={handleSubmit}
           reset={reset}
+          dataAsOf={dataAsOf}
           apiKey={apiKey}
           provider={provider}
           model={model}
@@ -337,7 +339,7 @@ export default function Home() {
                   )}
                 </AnimatePresence>
 
-                <ResultsSection result={result} onReset={reset} selectedState={selectedState} submittedCount={submittedCount} />
+                <ResultsSection result={result} onReset={reset} selectedState={selectedState} submittedCount={submittedCount} dataAsOf={dataAsOf} />
               </div>
 
             </motion.div>

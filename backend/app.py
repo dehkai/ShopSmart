@@ -1,4 +1,6 @@
 import os
+import sqlite3
+from datetime import datetime, timezone
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, status, HTTPException, Query
@@ -104,6 +106,24 @@ def search_items(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database search failed: {str(e)}")
+
+
+@app.get("/meta")
+def get_meta():
+    # Non-critical info endpoint: never raise, just report what we know.
+    try:
+        if not DB_FILE.exists():
+            return {"data_as_of": None}
+        conn = sqlite3.connect(DB_FILE)
+        row = conn.execute("SELECT MAX(date) FROM prices").fetchone()
+        conn.close()
+        if row is None or row[0] is None:
+            return {"data_as_of": None}
+        # `date` is stored as pandas datetime64 (ns-since-epoch).
+        data_as_of = datetime.fromtimestamp(row[0] / 1e9, tz=timezone.utc).date().isoformat()
+        return {"data_as_of": data_as_of}
+    except Exception:
+        return {"data_as_of": None}
 
 
 @app.get("/items/{item_code}/prices")

@@ -16,6 +16,30 @@ export function formatDistance(
   return `${prefix}${km.toFixed(1)} km`
 }
 
+/**
+ * Sentence-case "data freshness" line, always resolvable to a real calendar
+ * date (no relative-only label hidden behind a hover tooltip that doesn't
+ * work on touch). `isStale` only trips past two weeks — grocery prices don't
+ * move hourly, so a few days old is normal, not an error state.
+ */
+export function formatDataAge(isoDate: string): { label: string; isStale: boolean } {
+  const days = Math.floor((Date.now() - new Date(isoDate).getTime()) / 86_400_000)
+  const fullDate = new Date(isoDate).toLocaleDateString('en-MY', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  })
+  const label =
+    days <= 0
+      ? 'Prices updated today'
+      : days === 1
+        ? 'Prices updated yesterday'
+        : days <= 6
+          ? `Prices updated ${days} days ago`
+          : `Prices as of ${fullDate}`
+  return { label, isStale: days > 14 }
+}
+
 interface MapsTarget {
   premise: string
   address?: string | null

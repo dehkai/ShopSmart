@@ -97,6 +97,22 @@ export function useBasket() {
   const [apiKey, setApiKey] = useState<string>('')
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
   const [pendingOptimize, setPendingOptimize] = useState<boolean>(false)
+  const [dataAsOf, setDataAsOf] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/meta')
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled) setDataAsOf(data.data_as_of ?? null)
+      })
+      .catch(() => {
+        // Non-critical — badge simply doesn't render.
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -236,6 +252,7 @@ export function useBasket() {
     error,
     handleSubmit,
     reset,
+    dataAsOf,
 
     provider,
     model,
